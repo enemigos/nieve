@@ -1,0 +1,38 @@
+[
+  {
+    "input": "18.972.631-7",
+    "cleaned": "189726317",
+    "formatted": "18.972.631-7",
+    "formattedNoDots": "18972631-7"
+  },
+  {
+    "input": "18972631-7",
+    "cleaned": "189726317",
+    "formatted": "18.972.631-7",
+    "formattedNoDots": "18972631-7"
+  },
+  {
+    "input": "189726317",
+    "cleaned": "189726317",
+    "formatted": "18.972.631-7",
+    "formattedNoDots": "18972631-7"
+  },
+  {
+    "input": "9.068.826-k",
+    "cleaned": "9068826K",
+    "formatted": "9.068.826-K",
+    "formattedNoDots": "9068826-K"
+  },
+  {
+    "input": "9068826-k",
+    "cleaned": "9068826K",
+    "formatted": "9.068.826-K",
+    "formattedNoDots": "9068826-K"
+  },
+  {
+    "input": "9068826k",
+    "cleaned": "9068826K",
+    "formatted": "9.068.826-K",
+    "formattedNoDots": "9068826-K"
+  }
+]

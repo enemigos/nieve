@@ -1,0 +1,17 @@
+[
+  { "input": "18.972.631-0", "kind": "check_digit" },
+  { "input": "18,972,631-7", "kind": "format" },
+  { "input": "18*972*631-7", "kind": "format" },
+  { "input": "18-972-631-7", "kind": "format" },
+  { "input": "error18.972.631-7", "kind": "format" },
+  { "input": "9068826-1", "kind": "check_digit" },
+  { "input": "", "kind": "format" },
+  { "input": "0", "kind": "format" },
+  { "input": "00.000.000-0", "kind": "format" },
+  { "input": "00000000-0", "kind": "format" },
+  { "input": "0000000000000000000000-0", "kind": "format" },
+  { "input": "1996", "kind": "length" },
+  { "input": "17353", "kind": "length" },
+  { "input": "1", "kind": "format" },
+  { "input": "17", "kind": "length" }
+]

@@ -1,0 +1,15 @@
+{
+  "name": "rut-monorepo",
+  "private": true,
+  "type": "module",
+  "scripts": {
+    "build": "pnpm --filter rut-cl build",
+    "test": "pnpm --filter rut-cl test",
+    "typecheck": "pnpm --filter rut-cl typecheck",
+    "lint:package": "pnpm --filter rut-cl lint:package"
+  },
+  "engines": {
+    "node": ">=20"
+  },
+  "packageManager": "pnpm@11.0.9"
+}

@@ -1,0 +1,3 @@
+- Make illegal states unrepresentable; prefer ADTs/discriminated unions over boolean flags and loosely optional fields.
+- Use explicit and non-ambiguous language in commits, example: `fix(map): preserve territory retries after empty bootstrap cache`
+- Do not use smart quotes, em dashes, or ellipsis characters.

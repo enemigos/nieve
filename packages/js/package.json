@@ -1,0 +1,54 @@
+{
+  "name": "rut-cl",
+  "version": "0.1.0",
+  "description": "Lean Chilean RUT validation and formatting for TypeScript",
+  "license": "MIT",
+  "type": "module",
+  "sideEffects": false,
+  "types": "./dist/index.d.ts",
+  "exports": {
+    ".": {
+      "types": "./dist/index.d.ts",
+      "import": "./dist/index.js"
+    }
+  },
+  "files": [
+    "dist",
+    "LICENSE",
+    "README.md"
+  ],
+  "scripts": {
+    "build": "tsdown",
+    "test": "vitest run",
+    "test:watch": "vitest",
+    "typecheck": "tsc --noEmit",
+    "lint:package": "publint && attw --pack . --profile esm-only"
+  },
+  "keywords": [
+    "rut",
+    "chile",
+    "validate",
+    "format",
+    "typescript"
+  ],
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/dud-cl/rut.git",
+    "directory": "packages/js"
+  },
+  "bugs": {
+    "url": "https://github.com/dud-cl/rut/issues"
+  },
+  "homepage": "https://github.com/dud-cl/rut#readme",
+  "engines": {
+    "node": ">=20"
+  },
+  "devDependencies": {
+    "@arethetypeswrong/cli": "^0.18.2",
+    "@types/node": "^24.3.0",
+    "publint": "^0.3.12",
+    "tsdown": "^0.15.0",
+    "typescript": "^5.9.2",
+    "vitest": "^3.2.4"
+  }
+}
