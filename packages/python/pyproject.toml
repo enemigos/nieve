@@ -25,9 +25,9 @@ classifiers = [
 dependencies = []
 
 [project.urls]
-Homepage = "https://github.com/dud-cl/rut"
-Repository = "https://github.com/dud-cl/rut"
-Issues = "https://github.com/dud-cl/rut/issues"
+Homepage = "https://github.com/panquequelol/rut-cl"
+Repository = "https://github.com/panquequelol/rut-cl"
+Issues = "https://github.com/panquequelol/rut-cl/issues"
 
 [project.optional-dependencies]
 dev = ["pytest>=8.0", "mypy>=1.14"]

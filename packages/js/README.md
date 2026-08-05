@@ -52,6 +52,14 @@ const schema = v.object({
 })
 ```
 
+### Drop-in for `rut.js`
+
+```ts
+import { validate, clean, format, getCheckDigit } from 'rut-cl/legacy'
+```
+
+Same names as [rut.js](https://github.com/jlobos/rut.js). `validate` uses the modern length gate (cleaned length 8-9), so short false positives are rejected.
+
 ## API
 
 | Function | Role |

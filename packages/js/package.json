@@ -10,6 +10,10 @@
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
+    },
+    "./legacy": {
+      "types": "./dist/legacy.d.ts",
+      "import": "./dist/legacy.js"
     }
   },
   "files": [
@@ -29,17 +33,18 @@
     "chile",
     "validate",
     "format",
-    "typescript"
+    "typescript",
+    "rut.js"
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/dud-cl/rut.git",
+    "url": "git+https://github.com/panquequelol/rut-cl.git",
     "directory": "packages/js"
   },
   "bugs": {
-    "url": "https://github.com/dud-cl/rut/issues"
+    "url": "https://github.com/panquequelol/rut-cl/issues"
   },
-  "homepage": "https://github.com/dud-cl/rut#readme",
+  "homepage": "https://github.com/panquequelol/rut-cl#readme",
   "engines": {
     "node": ">=20"
   },
