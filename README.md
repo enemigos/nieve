@@ -70,12 +70,29 @@ rut.clean("18.972.631-k")      # "18972631K"
 rut.check_digit("18972631")    # "7"
 ```
 
+### With Pydantic
+
+```python
+from typing import Annotated
+from pydantic import AfterValidator, BaseModel
+from rut_cl import ensure
+
+class User(BaseModel):
+    national_id: Annotated[str, AfterValidator(ensure)]
+
+user = User(national_id="18.972.631-7")
+user.national_id  # "189726317"
+```
+
+`ensure` is like `parse`, but raises `ValueError` so Pydantic maps failures cleanly.
+
 ## API
 
 | TS | Python | Role |
 |---|---|---|
 | `parse` | `parse` | Validate; return cleaned RUT or throw/raise |
 | `safeParse` | `safe_parse` | Validate; return success/failure result |
+| — | `ensure` | Like `parse`, raises `ValueError` (Pydantic-friendly) |
 | `is` | `is_rut` | Type guard |
 | `format` | `format` | Display transform (`dots` default `true`) |
 | `clean` | `clean` | Normalize only (no validation) |

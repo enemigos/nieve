@@ -101,6 +101,18 @@ def parse(input: object) -> Rut:
     return result.output
 
 
+def ensure(input: object) -> Rut:
+    """Validate and return a cleaned RUT, or raise ``ValueError``.
+
+    Drop into Pydantic ``AfterValidator`` / similar tools that expect
+    ``ValueError`` (unlike ``parse``, which raises ``RutError``).
+    """
+    result = safe_parse(input)
+    if not result.success:
+        raise ValueError(result.issues[0].message)
+    return result.output
+
+
 def is_rut(input: object) -> TypeGuard[Rut]:
     """Type guard: ``True`` when ``input`` is a valid RUT.
 

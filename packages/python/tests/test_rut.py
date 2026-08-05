@@ -9,6 +9,7 @@ from rut_cl import (
     RutError,
     check_digit,
     clean,
+    ensure,
     format,
     is_rut,
     parse,
@@ -100,3 +101,12 @@ def test_rejects_email_digits_via_clean() -> None:
 @pytest.mark.parametrize("value", ["1", "17", "173", "1735", "17353"])
 def test_rejects_short_progressive_input(value: str) -> None:
     assert is_rut(value) is False
+
+
+def test_ensure_returns_cleaned_rut() -> None:
+    assert ensure("18.972.631-7") == "189726317"
+
+
+def test_ensure_raises_value_error() -> None:
+    with pytest.raises(ValueError, match="check digit"):
+        ensure("18.972.631-0")
