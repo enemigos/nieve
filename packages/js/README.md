@@ -1,22 +1,22 @@
 # @dud-cl/rut
 
-Lean Chilean RUT validation and formatting for TypeScript.
+Valida y da formato a valores RUT de Chile en TypeScript.
 
-Inspired by [rut.js](https://github.com/jlobos/rut.js), with a Valibot/Zod-shaped validation API.
+La API usa objetos de resultado similares a los de Valibot y Zod.
 
-## Install
+## Instalar
 
 ```bash
 npm i @dud-cl/rut
 ```
 
-## Usage
+## Uso
 
 ```ts
 import * as rut from '@dud-cl/rut'
 
 const value = rut.parse('18.972.631-7')
-// branded Rut string: '189726317'
+// RUT limpio con marca de tipo: '189726317'
 
 rut.format(value)                  // '18.972.631-7'
 rut.format(value, { dots: false }) // '18972631-7'
@@ -25,7 +25,16 @@ const kValue = rut.parse('9.068.826-k')
 rut.format(kValue, { uppercase: false }) // '9.068.826-k'
 
 rut.safeParse('18.972.631-0')
-// { success: false, issue: { kind: 'check_digit', ... } }
+// {
+//   success: false,
+//   issue: {
+//     kind: 'check_digit',
+//     message: 'Invalid check digit: expected 7, received 0',
+//     input: '18.972.631-0',
+//     expected: '7',
+//     received: '0',
+//   },
+// }
 
 rut.is('9068826k') // true
 
@@ -34,45 +43,45 @@ rut.getVerifier('9.068.826')                 // 'K'
 rut.compare('18.972.631-7', '189726317')     // true
 ```
 
-### With Zod
+### Con Zod
 
 ```ts
 import * as z from 'zod'
 import * as rut from '@dud-cl/rut'
 
 const schema = z.object({
-  nationalId: z.string().refine(rut.is, { message: 'Invalid RUT' }),
+  nationalId: z.string().refine(rut.is, { message: 'RUT incorrecto' }),
 })
 ```
 
-### With Valibot
+### Con Valibot
 
 ```ts
 import * as v from 'valibot'
 import * as rut from '@dud-cl/rut'
 
 const schema = v.object({
-  nationalId: v.pipe(v.string(), v.check(rut.is, 'Invalid RUT')),
+  nationalId: v.pipe(v.string(), v.check(rut.is, 'RUT incorrecto')),
 })
 ```
 
 ## API
 
-| Function | Role |
+| API | Uso |
 |---|---|
-| `parse(input)` | Validate; return branded cleaned RUT or throw `RutError` |
-| `safeParse(input)` | Validate; return `{ success, output }` or `{ success: false, issue }` |
-| `is(input)` | Return whether input is valid |
-| `format(rut, options?)` | Format a validated `Rut`; configure dots and `K` casing |
-| `clean(input)` | Normalize without validating |
-| `compare(left, right)` | Compare canonical values; both inputs must be valid |
-| `getVerifier(body)` | Calculate a valid body verifier; return `null` if invalid |
+| `parse(input)` | Valida la entrada. Devuelve el RUT limpio o lanza `RutError`. |
+| `safeParse(input)` | Valida la entrada sin lanzar errores. Devuelve el resultado. |
+| `is(input)` | Indica si la entrada es correcta. |
+| `format(rut, options?)` | Da formato a un RUT validado. Usa `dots` y `uppercase` para definir la salida. |
+| `clean(input)` | Quita el formato sin validar. |
+| `compare(left, right)` | Compara dos RUT correctos. |
+| `getVerifier(body)` | Calcula el verificador de un cuerpo correcto. Devuelve `null` cuando el cuerpo es incorrecto. |
 
-Canonical form after a successful parse is the cleaned string (`189726317`).
+Tras validar la entrada, `parse` devuelve la cadena limpia (`189726317`).
 
-`parse` / `safeParse` / `is` require a canonical length of 8-9 (7-8 digit body + DV). `parse` and successful `safeParse` results are the supported way to create values accepted by `format`.
+La cadena limpia tiene 8 o 9 caracteres: un cuerpo de 7 u 8 cifras y un verificador. Entrega a `format` un valor devuelto por `parse`.
 
-## Develop
+## Desarrollo
 
 ```bash
 pnpm install
@@ -80,6 +89,6 @@ pnpm test
 pnpm build
 ```
 
-## License
+## Licencia
 
 MIT

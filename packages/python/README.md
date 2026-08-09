@@ -1,16 +1,16 @@
 # dud-cl-rut
 
-Lean Chilean RUT validation and formatting for Python.
+Valida y da formato a valores RUT de Chile en Python.
 
-Same behavior as the TypeScript package, with snake_case names.
+La API de Python mantiene el mismo comportamiento y usa nombres `snake_case`.
 
-## Install
+## Instalar
 
 ```bash
 pip install dud-cl-rut
 ```
 
-## Usage
+## Uso
 
 ```python
 from dud_cl import rut
@@ -27,16 +27,16 @@ rut.format(k_value, uppercase=False)  # "9.068.826-k"
 rut.safe_parse("18.972.631-0")
 # SafeParseFailure(success=False, issue=CheckDigitIssue(...))
 
-rut.is_rut("9068826k")  # True  (TS export is `is`)
+rut.is_rut("9068826k")  # True  (el nombre en TypeScript es `is`)
 
 rut.clean("0018.972.631-7")                  # "189726317"
 rut.get_verifier("9.068.826")                 # "K"
 rut.compare("18.972.631-7", "189726317")     # True
 ```
 
-### With Pydantic
+### Con Pydantic
 
-`parse` raises `RutError`, a `ValueError` subclass, so it can be used directly with `AfterValidator`:
+`parse` lanza `RutError`. `RutError` hereda de `ValueError`. Puedes usar `parse` directamente con `AfterValidator`:
 
 ```python
 from typing import Annotated
@@ -52,19 +52,19 @@ user.national_id  # "189726317"
 
 ## API
 
-| Function | Role |
+| API | Uso |
 |---|---|
-| `parse(input)` | Validate; return cleaned RUT or raise `RutError` |
-| `safe_parse(input)` | Validate; return success/failure result |
-| `is_rut(input)` | Return whether input is valid (`is` in TypeScript) |
-| `format(rut, *, dots=True, uppercase=True)` | Format a validated `Rut` |
-| `clean(input)` | Normalize without validating |
-| `compare(left, right)` | Compare canonical values; both inputs must be valid |
-| `get_verifier(body)` | Calculate a valid body verifier; return `None` if invalid |
+| `parse(input)` | Valida la entrada. Devuelve el RUT limpio o lanza `RutError`. |
+| `safe_parse(input)` | Valida la entrada sin lanzar errores. Devuelve el resultado. |
+| `is_rut(input)` | Indica si la entrada es correcta. |
+| `format(rut, *, dots=True, uppercase=True)` | Da formato a un RUT validado. |
+| `clean(input)` | Quita el formato sin validar. |
+| `compare(left, right)` | Compara dos RUT correctos. |
+| `get_verifier(body)` | Calcula el verificador de un cuerpo correcto. Devuelve `None` cuando el cuerpo es incorrecto. |
 
-`parse` / `safe_parse` / `is_rut` require a canonical length of 8-9 (7-8 digit body + DV). `parse` and successful `safe_parse` results are the supported way to create values accepted by `format`.
+La cadena limpia tiene 8 o 9 caracteres: un cuerpo de 7 u 8 cifras y un verificador. Entrega a `format` un valor devuelto por `parse`.
 
-## Develop
+## Desarrollo
 
 ```bash
 uv sync --extra dev
@@ -72,6 +72,6 @@ uv run pytest
 uv run mypy
 ```
 
-## License
+## Licencia
 
 MIT

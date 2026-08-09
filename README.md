@@ -1,10 +1,10 @@
 # RUT
 
-Lean Chilean RUT validation and formatting for TypeScript and Python.
+Valida y da formato a valores RUT de Chile en TypeScript y Python.
 
-Inspired by [rut.js](https://github.com/jlobos/rut.js), with a Valibot/Zod-shaped validation API.
+La API de TypeScript usa objetos de resultado similares a los de Valibot y Zod.
 
-## Install
+## Instalar
 
 ```bash
 npm i @dud-cl/rut
@@ -17,7 +17,7 @@ pip install dud-cl-rut
 import * as rut from '@dud-cl/rut'
 
 const value = rut.parse('18.972.631-7')
-// branded Rut string: '189726317'
+// RUT limpio con marca de tipo: '189726317'
 
 rut.format(value)                  // '18.972.631-7'
 rut.format(value, { dots: false }) // '18972631-7'
@@ -26,7 +26,16 @@ const kValue = rut.parse('9.068.826-k')
 rut.format(kValue, { uppercase: false }) // '9.068.826-k'
 
 rut.safeParse('18.972.631-0')
-// { success: false, issue: { kind: 'check_digit', ... } }
+// {
+//   success: false,
+//   issue: {
+//     kind: 'check_digit',
+//     message: 'Invalid check digit: expected 7, received 0',
+//     input: '18.972.631-0',
+//     expected: '7',
+//     received: '0',
+//   },
+// }
 
 rut.is('9068826k') // true
 
@@ -35,25 +44,25 @@ rut.getVerifier('9.068.826')                 // 'K'
 rut.compare('18.972.631-7', '189726317')     // true
 ```
 
-### With Zod
+### Con Zod
 
 ```ts
 import * as z from 'zod'
 import * as rut from '@dud-cl/rut'
 
 const schema = z.object({
-  nationalId: z.string().refine(rut.is, { message: 'Invalid RUT' }),
+  nationalId: z.string().refine(rut.is, { message: 'RUT incorrecto' }),
 })
 ```
 
-### With Valibot
+### Con Valibot
 
 ```ts
 import * as v from 'valibot'
 import * as rut from '@dud-cl/rut'
 
 const schema = v.object({
-  nationalId: v.pipe(v.string(), v.check(rut.is, 'Invalid RUT')),
+  nationalId: v.pipe(v.string(), v.check(rut.is, 'RUT incorrecto')),
 })
 ```
 
@@ -71,14 +80,14 @@ k_value = rut.parse("9.068.826-k")
 rut.format(k_value, uppercase=False)  # "9.068.826-k"
 
 rut.safe_parse("18.972.631-0")
-rut.is_rut("9068826k")         # True (`is` is a Python keyword)
+rut.is_rut("9068826k")         # True (`is` es una palabra reservada de Python)
 
 rut.clean("0018.972.631-7")                  # "189726317"
 rut.get_verifier("9.068.826")                 # "K"
 rut.compare("18.972.631-7", "189726317")     # True
 ```
 
-### With Pydantic
+### Con Pydantic
 
 ```python
 from typing import Annotated
@@ -92,25 +101,25 @@ user = User(national_id="18.972.631-7")
 user.national_id  # "189726317"
 ```
 
-`RutError` subclasses `ValueError`, so Pydantic maps `parse` failures cleanly.
+`RutError` hereda de `ValueError`, por lo que Pydantic procesa los errores de `parse`.
 
 ## API
 
-| TS | Python | Role |
+| TS | Python | Uso |
 |---|---|---|
-| `parse` | `parse` | Validate; return cleaned RUT or throw/raise |
-| `safeParse` | `safe_parse` | Validate; return success/failure result |
-| `is` | `is_rut` | Return whether input is valid |
-| `format` | `format` | Format a validated `Rut`; configure dots and `K` casing |
-| `clean` | `clean` | Normalize without validating |
-| `compare` | `compare` | Compare canonical values; both inputs must be valid |
-| `getVerifier` | `get_verifier` | Calculate a valid body verifier; return `null`/`None` if invalid |
+| `parse` | `parse` | Valida la entrada. Devuelve el RUT limpio o informa un error. |
+| `safeParse` | `safe_parse` | Valida la entrada sin lanzar errores. Devuelve el resultado. |
+| `is` | `is_rut` | Indica si la entrada es correcta. |
+| `format` | `format` | Da formato a un RUT validado. Usa `dots` y `uppercase` para definir la salida. |
+| `clean` | `clean` | Quita el formato sin validar. |
+| `compare` | `compare` | Compara dos RUT correctos. |
+| `getVerifier` | `get_verifier` | Calcula el verificador de un cuerpo correcto. Devuelve `null` o `None` cuando el cuerpo es incorrecto. |
 
-Canonical form after a successful parse is the cleaned string (`189726317`).
+Tras validar la entrada, `parse` devuelve la cadena limpia (`189726317`).
 
-`parse` / `safeParse` / `is` require a canonical length of 8-9 (7-8 digit body + DV). Parsing is the supported way to create values accepted by `format`.
+La cadena limpia tiene 8 o 9 caracteres: un cuerpo de 7 u 8 cifras y un verificador. Entrega a `format` un valor devuelto por `parse`.
 
-## Develop
+## Desarrollo
 
 ```bash
 # TypeScript
@@ -124,6 +133,6 @@ uv sync --extra dev
 uv run pytest
 ```
 
-## License
+## Licencia
 
 MIT
