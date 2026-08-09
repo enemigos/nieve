@@ -1,20 +1,10 @@
 from __future__ import annotations
 
-from rut_cl.clean import clean
+from rut_cl.types import Rut
 
 
-def format(input: object, *, dots: bool = True) -> str:
-    """Format a RUT-like value for display.
-
-    Does not validate check digit.
-    """
-    if not input:
-        return ""
-
-    rut = clean(input)
-    # Need at least body digit + DV; otherwise avoid odd outputs like "-0".
-    if len(rut) < 2:
-        return ""
+def format(rut: Rut, *, dots: bool = True) -> str:
+    """Format a validated RUT for display."""
 
     body = rut[:-1]
     dv = rut[-1]

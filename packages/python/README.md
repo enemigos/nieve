@@ -22,25 +22,22 @@ rut.format(value)                 # "18.972.631-7"
 rut.format(value, dots=False)     # "18972631-7"
 
 rut.safe_parse("18.972.631-0")
-# SafeParseFailure(success=False, issues=(CheckDigitIssue(...),))
+# SafeParseFailure(success=False, issue=CheckDigitIssue(...))
 
 rut.is_rut("9068826k")  # True  (TS export is `is`)
-
-rut.clean("18.972.631-k")   # "18972631K"
-rut.check_digit("18972631") # "7"
 ```
 
 ### With Pydantic
 
-`ensure` raises `ValueError` and returns the cleaned RUT, so it drops straight into `AfterValidator`:
+`parse` raises `RutError`, a `ValueError` subclass, so it can be used directly with `AfterValidator`:
 
 ```python
 from typing import Annotated
 from pydantic import AfterValidator, BaseModel
-from rut_cl import ensure
+from rut_cl import parse
 
 class User(BaseModel):
-    national_id: Annotated[str, AfterValidator(ensure)]
+    national_id: Annotated[str, AfterValidator(parse)]
 
 user = User(national_id="18.972.631-7")
 user.national_id  # "189726317"
@@ -52,13 +49,10 @@ user.national_id  # "189726317"
 |---|---|
 | `parse(input)` | Validate; return cleaned RUT or raise `RutError` |
 | `safe_parse(input)` | Validate; return success/failure result |
-| `ensure(input)` | Like `parse`, but raises `ValueError` (Pydantic-friendly) |
-| `is_rut(input)` | Type guard (`is` in TypeScript) |
-| `format(input, *, dots=True)` | Display transform |
-| `clean(input)` | Normalize only |
-| `check_digit(body)` | Compute DV |
+| `is_rut(input)` | Return whether input is valid (`is` in TypeScript) |
+| `format(rut, *, dots=True)` | Format a validated `Rut` |
 
-`parse` / `safe_parse` / `ensure` / `is_rut` require cleaned length 8-9 (7-8 digit body + DV).
+`parse` / `safe_parse` / `is_rut` require a canonical length of 8-9 (7-8 digit body + DV). `parse` and successful `safe_parse` results are the supported way to create values accepted by `format`.
 
 ## Develop
 

@@ -1,11 +1,11 @@
 import type { RutIssue } from './types'
 
 export class RutError extends Error {
-  readonly issues: readonly [RutIssue, ...RutIssue[]]
+  readonly issue: RutIssue
 
-  constructor(issues: readonly [RutIssue, ...RutIssue[]]) {
-    super(issues[0]?.message ?? 'Invalid RUT')
+  constructor(issue: RutIssue) {
+    super(issue.message)
     this.name = 'RutError'
-    this.issues = issues
+    this.issue = issue
   }
 }

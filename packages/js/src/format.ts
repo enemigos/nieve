@@ -1,21 +1,9 @@
-import { clean } from './clean'
-import type { FormatOptions } from './types'
+import type { FormatOptions, Rut } from './types'
 
 /**
- * Format a RUT-like string for display.
- * Does not validate check digit.
+ * Format a validated RUT for display.
  */
-export function format(input: unknown, options: FormatOptions = {}): string {
-  if (!input) {
-    return ''
-  }
-
-  const rut = clean(input)
-  // Need at least body digit + DV; otherwise avoid odd outputs like "-0".
-  if (rut.length < 2) {
-    return ''
-  }
-
+export function format(rut: Rut, options: FormatOptions = {}): string {
   const dots = options.dots ?? true
   const body = rut.slice(0, -1)
   const dv = rut.slice(-1)

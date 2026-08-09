@@ -3,6 +3,7 @@
   { "input": "18,972,631-7", "kind": "format" },
   { "input": "18*972*631-7", "kind": "format" },
   { "input": "18-972-631-7", "kind": "format" },
+  { "input": "1\u0668\u0669\u0667\u0662\u0666\u0663\u0661-7", "kind": "format" },
   { "input": "error18.972.631-7", "kind": "format" },
   { "input": "9068826-1", "kind": "check_digit" },
   { "input": "", "kind": "format" },

@@ -3,8 +3,6 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import {
-  checkDigit,
-  clean,
   format,
   is,
   parse,
@@ -33,55 +31,18 @@ type InvalidCase = {
   kind: 'type' | 'format' | 'length' | 'check_digit'
 }
 
-type CleanCase = { input: string; output: string }
-type CheckDigitCase = { input: string; output: string }
-
 const valid = loadFixture<ValidCase[]>('valid.json')
 const invalid = loadFixture<InvalidCase[]>('invalid.json')
-const cleanCases = loadFixture<CleanCase[]>('clean.json')
-const checkDigitCases = loadFixture<CheckDigitCase[]>('check-digit.json')
-
-describe('clean', () => {
-  it.each(cleanCases)('$input -> $output', ({ input, output }) => {
-    expect(clean(input)).toBe(output)
-  })
-
-  it('returns empty string for non-strings', () => {
-    expect(clean(189726317)).toBe('')
-    expect(clean(null)).toBe('')
-  })
-})
 
 describe('format', () => {
   it.each(valid)(
     '$input formats with dots',
     ({ input, formatted, formattedNoDots }) => {
-      expect(format(input)).toBe(formatted)
-      expect(format(input, { dots: false })).toBe(formattedNoDots)
+      const rut = parse(input)
+      expect(format(rut)).toBe(formatted)
+      expect(format(rut, { dots: false })).toBe(formattedNoDots)
     },
   )
-
-  it('returns empty string for empty or DV-only input', () => {
-    expect(format('')).toBe('')
-    expect(format('0-0')).toBe('')
-    expect(format('K')).toBe('')
-  })
-})
-
-describe('checkDigit', () => {
-  it.each(checkDigitCases)('$input -> $output', ({ input, output }) => {
-    expect(checkDigit(input)).toBe(output)
-  })
-
-  it('throws for non-digit bodies', () => {
-    expect(() => checkDigit('Felipe Camiroaga')).toThrow(
-      '"Felipe Camiroaga" as RUT is invalid',
-    )
-  })
-
-  it('throws for non-string input', () => {
-    expect(() => checkDigit(0)).toThrow('"0" as RUT is invalid')
-  })
 })
 
 describe('safeParse / parse / is', () => {
@@ -96,7 +57,7 @@ describe('safeParse / parse / is', () => {
     const result = safeParse(input)
     expect(result.success).toBe(false)
     if (!result.success) {
-      expect(result.issues[0]?.kind).toBe(kind)
+      expect(result.issue.kind).toBe(kind)
     }
     expect(is(input)).toBe(false)
     expect(() => parse(input)).toThrow(RutError)
@@ -106,24 +67,31 @@ describe('safeParse / parse / is', () => {
     const result = safeParse(189726317)
     expect(result.success).toBe(false)
     if (!result.success) {
-      expect(result.issues[0]?.kind).toBe('type')
+      expect(result.issue.kind).toBe('type')
     }
     expect(is(189726317)).toBe(false)
   })
 
-  it('rejects email digits extracted via clean (rut.js #15)', () => {
-    const extracted = clean('chuma1996@gmail.com')
-    expect(extracted).toBe('1996')
-    expect(is(extracted)).toBe(false)
-    expect(safeParse(extracted)).toMatchObject({
+  it('rejects unrelated input instead of extracting digits (rut.js #15)', () => {
+    expect(safeParse('chuma1996@gmail.com')).toMatchObject({
       success: false,
-      issues: [{ kind: 'length' }],
+      issue: { kind: 'format' },
     })
   })
 
   it('rejects short progressive input (rut.js #25)', () => {
     for (const value of ['1', '17', '173', '1735', '17353']) {
       expect(is(value)).toBe(false)
+    }
+  })
+
+  it('exposes the single parse issue on RutError', () => {
+    try {
+      parse('18.972.631-0')
+      expect.unreachable()
+    } catch (error) {
+      expect(error).toBeInstanceOf(RutError)
+      expect((error as RutError).issue.kind).toBe('check_digit')
     }
   })
 })

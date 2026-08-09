@@ -1,5 +1,4 @@
 import { checkDigit } from './check-digit'
-import { clean } from './clean'
 import { RutError } from './error'
 import type { Rut, RutIssue, SafeParseResult } from './types'
 
@@ -23,7 +22,7 @@ export function safeParse(input: unknown): SafeParseResult {
       input,
     } as const satisfies RutIssue
 
-    return { success: false, issues: [issue] }
+    return { success: false, issue }
   }
 
   if (!RUT_FORMAT.test(input)) {
@@ -33,10 +32,10 @@ export function safeParse(input: unknown): SafeParseResult {
       input,
     } as const satisfies RutIssue
 
-    return { success: false, issues: [issue] }
+    return { success: false, issue }
   }
 
-  const cleaned = clean(input)
+  const cleaned = input.replace(/[.-]/g, '').toUpperCase()
 
   if (
     cleaned.length < MIN_CLEANED_LENGTH ||
@@ -48,7 +47,7 @@ export function safeParse(input: unknown): SafeParseResult {
       input,
     } as const satisfies RutIssue
 
-    return { success: false, issues: [issue] }
+    return { success: false, issue }
   }
 
   const body = cleaned.slice(0, -1)
@@ -64,7 +63,7 @@ export function safeParse(input: unknown): SafeParseResult {
       received,
     } as const satisfies RutIssue
 
-    return { success: false, issues: [issue] }
+    return { success: false, issue }
   }
 
   return { success: true, output: asRut(cleaned) }
@@ -74,12 +73,12 @@ export function parse(input: unknown): Rut {
   const result = safeParse(input)
 
   if (!result.success) {
-    throw new RutError(result.issues)
+    throw new RutError(result.issue)
   }
 
   return result.output
 }
 
-export function is(input: unknown): input is Rut {
+export function is(input: unknown): boolean {
   return safeParse(input).success
 }

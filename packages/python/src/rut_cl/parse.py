@@ -1,10 +1,8 @@
 from __future__ import annotations
 
 import re
-from typing import TypeGuard
 
-from rut_cl.check_digit import check_digit
-from rut_cl.clean import clean
+from rut_cl._check_digit import _check_digit
 from rut_cl.error import RutError
 from rut_cl.types import (
     CheckDigitIssue,
@@ -18,7 +16,7 @@ from rut_cl.types import (
 )
 
 # Same shape gate as rut.js `validate`.
-_RUT_FORMAT = re.compile(r"^([1-9]\d{0,2}(\.?\d{3})*)-?[\dkK]$")
+_RUT_FORMAT = re.compile(r"^([1-9][0-9]{0,2}(\.?[0-9]{3})*)-?[0-9kK]$")
 
 # Body 7-8 digits + DV. Rejects short modulo-11 false positives.
 _MIN_CLEANED_LENGTH = 8
@@ -29,28 +27,24 @@ def safe_parse(input: object) -> SafeParseResult:
     if not isinstance(input, str):
         return SafeParseFailure(
             success=False,
-            issues=(
-                TypeIssue(
-                    kind="type",
-                    message="Expected a string RUT",
-                    input=input,
-                ),
+            issue=TypeIssue(
+                kind="type",
+                message="Expected a string RUT",
+                input=input,
             ),
         )
 
     if _RUT_FORMAT.fullmatch(input) is None:
         return SafeParseFailure(
             success=False,
-            issues=(
-                FormatIssue(
-                    kind="format",
-                    message="Invalid RUT format",
-                    input=input,
-                ),
+            issue=FormatIssue(
+                kind="format",
+                message="Invalid RUT format",
+                input=input,
             ),
         )
 
-    cleaned = clean(input)
+    cleaned = input.replace(".", "").replace("-", "").upper()
 
     if (
         len(cleaned) < _MIN_CLEANED_LENGTH
@@ -58,36 +52,32 @@ def safe_parse(input: object) -> SafeParseResult:
     ):
         return SafeParseFailure(
             success=False,
-            issues=(
-                LengthIssue(
-                    kind="length",
-                    message=(
-                        f"RUT must be {_MIN_CLEANED_LENGTH}-{_MAX_CLEANED_LENGTH} "
-                        "characters after cleaning"
-                    ),
-                    input=input,
+            issue=LengthIssue(
+                kind="length",
+                message=(
+                    f"RUT must be {_MIN_CLEANED_LENGTH}-{_MAX_CLEANED_LENGTH} "
+                    "characters after cleaning"
                 ),
+                input=input,
             ),
         )
 
     body = cleaned[:-1]
     received = cleaned[-1]
-    expected = check_digit(body)
+    expected = _check_digit(body)
 
     if expected != received:
         return SafeParseFailure(
             success=False,
-            issues=(
-                CheckDigitIssue(
-                    kind="check_digit",
-                    message=(
-                        f"Invalid check digit: expected {expected}, "
-                        f"received {received}"
-                    ),
-                    input=input,
-                    expected=expected,
-                    received=received,
+            issue=CheckDigitIssue(
+                kind="check_digit",
+                message=(
+                    f"Invalid check digit: expected {expected}, "
+                    f"received {received}"
                 ),
+                input=input,
+                expected=expected,
+                received=received,
             ),
         )
 
@@ -97,24 +87,12 @@ def safe_parse(input: object) -> SafeParseResult:
 def parse(input: object) -> Rut:
     result = safe_parse(input)
     if not result.success:
-        raise RutError(result.issues)
+        raise RutError(result.issue)
     return result.output
 
 
-def ensure(input: object) -> Rut:
-    """Validate and return a cleaned RUT, or raise ``ValueError``.
-
-    Drop into Pydantic ``AfterValidator`` / similar tools that expect
-    ``ValueError`` (unlike ``parse``, which raises ``RutError``).
-    """
-    result = safe_parse(input)
-    if not result.success:
-        raise ValueError(result.issues[0].message)
-    return result.output
-
-
-def is_rut(input: object) -> TypeGuard[Rut]:
-    """Type guard: ``True`` when ``input`` is a valid RUT.
+def is_rut(input: object) -> bool:
+    """Return whether input is a valid RUT.
 
     Named ``is_rut`` because ``is`` is a Python keyword (TS export is ``is``).
     """

@@ -31,7 +31,7 @@ export type SafeParseResult =
   | { readonly success: true; readonly output: Rut }
   | {
       readonly success: false
-      readonly issues: readonly [RutIssue, ...RutIssue[]]
+      readonly issue: RutIssue
     }
 
 export type FormatOptions = {

@@ -48,7 +48,7 @@ class SafeParseSuccess:
 @dataclass(frozen=True, slots=True)
 class SafeParseFailure:
     success: Literal[False]
-    issues: tuple[RutIssue, ...]
+    issue: RutIssue
 
 
 SafeParseResult: TypeAlias = SafeParseSuccess | SafeParseFailure

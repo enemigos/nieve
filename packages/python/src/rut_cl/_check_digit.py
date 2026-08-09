@@ -1,16 +1,12 @@
 from __future__ import annotations
 
-from rut_cl.clean import clean
 
-
-def check_digit(input: object) -> str:
+def _check_digit(body: str) -> str:
     """Compute the modulo-11 check digit for a RUT body (digits only, no DV)."""
-    cleaned = clean(input)
+    if body == "" or not body.isascii() or not body.isdigit():
+        raise ValueError(f'"{body}" as RUT is invalid')
 
-    if cleaned == "" or not cleaned.isdigit():
-        raise ValueError(f'"{input}" as RUT is invalid')
-
-    digits = [int(char) for char in cleaned]
+    digits = [int(char) for char in body]
     total = sum(
         digit * ((index % 6) + 2) for index, digit in enumerate(reversed(digits))
     )

@@ -2,7 +2,7 @@
 
 Lean Chilean RUT validation and formatting for TypeScript.
 
-Inspired by [rut.js](https://github.com/jlobos/rut.js), with a Valibot/Zod-shaped API: `parse` / `safeParse` / `is`, plus small helpers.
+Inspired by [rut.js](https://github.com/jlobos/rut.js), with a Valibot/Zod-shaped validation API.
 
 ## Install
 
@@ -22,12 +22,9 @@ rut.format(value)                  // '18.972.631-7'
 rut.format(value, { dots: false }) // '18972631-7'
 
 rut.safeParse('18.972.631-0')
-// { success: false, issues: [{ kind: 'check_digit', ... }] }
+// { success: false, issue: { kind: 'check_digit', ... } }
 
 rut.is('9068826k') // true
-
-rut.clean('18.972.631-k')  // '18972631K' (normalize only)
-rut.checkDigit('18972631') // '7'
 ```
 
 ### With Zod
@@ -52,28 +49,26 @@ const schema = v.object({
 })
 ```
 
-### Drop-in for `rut.js`
+### rut.js-compatible helpers
 
 ```ts
 import { validate, clean, format, getCheckDigit } from 'rut-cl/legacy'
 ```
 
-Same names as [rut.js](https://github.com/jlobos/rut.js). `validate` uses the modern length gate (cleaned length 8-9), so short false positives are rejected.
+These ESM helpers preserve rut.js's permissive behavior for documented string inputs. Use the root entry point for strict validation.
 
 ## API
 
 | Function | Role |
 |---|---|
 | `parse(input)` | Validate; return branded cleaned RUT or throw `RutError` |
-| `safeParse(input)` | Validate; return `{ success, output }` or `{ success: false, issues }` |
-| `is(input)` | Type guard |
-| `format(input, options?)` | Display transform (`dots` default `true`) |
-| `clean(input)` | Normalize only (no validation) |
-| `checkDigit(body)` | Compute DV for a body |
+| `safeParse(input)` | Validate; return `{ success, output }` or `{ success: false, issue }` |
+| `is(input)` | Return whether input is valid |
+| `format(rut, options?)` | Format a validated `Rut` (`dots` defaults to `true`) |
 
 Canonical form after a successful parse is the cleaned string (`189726317`).
 
-`parse` / `safeParse` / `is` require a cleaned length of 8-9 (7-8 digit body + DV). That blocks short modulo-11 false positives from progressive typing or `clean()` on unrelated strings.
+`parse` / `safeParse` / `is` require a canonical length of 8-9 (7-8 digit body + DV). `parse` and successful `safeParse` results are the supported way to create values accepted by `format`.
 
 ## Develop
 
@@ -87,4 +82,4 @@ pnpm build
 
 MIT
 
-Cleaning/validation behavior follows [rut.js](https://github.com/jlobos/rut.js) (MIT). This is a separate package, not a drop-in republish of `rut.js`.
+The legacy helpers follow [rut.js](https://github.com/jlobos/rut.js) behavior (MIT).
