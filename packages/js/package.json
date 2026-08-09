@@ -1,19 +1,18 @@
 {
-  "name": "rut-cl",
+  "name": "@dud-cl/rut",
   "version": "0.1.0",
   "description": "Lean Chilean RUT validation and formatting for TypeScript",
   "license": "MIT",
   "type": "module",
   "sideEffects": false,
+  "publishConfig": {
+    "access": "public"
+  },
   "types": "./dist/index.d.ts",
   "exports": {
     ".": {
       "types": "./dist/index.d.ts",
       "import": "./dist/index.js"
-    },
-    "./legacy": {
-      "types": "./dist/legacy.d.ts",
-      "import": "./dist/legacy.js"
     }
   },
   "files": [

@@ -1,6 +1,6 @@
 from __future__ import annotations
 
-from rut_cl.types import RutIssue
+from .types import RutIssue
 
 
 class RutError(ValueError):

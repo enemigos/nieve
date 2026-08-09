@@ -3,7 +3,10 @@ import { dirname, join } from 'node:path'
 import { fileURLToPath } from 'node:url'
 import { describe, expect, it } from 'vitest'
 import {
+  clean,
+  compare,
   format,
+  getVerifier,
   is,
   parse,
   RutError,
@@ -31,8 +34,15 @@ type InvalidCase = {
   kind: 'type' | 'format' | 'length' | 'check_digit'
 }
 
+type UtilityCase = {
+  input: string
+  output: string
+}
+
 const valid = loadFixture<ValidCase[]>('valid.json')
 const invalid = loadFixture<InvalidCase[]>('invalid.json')
+const cleaned = loadFixture<UtilityCase[]>('clean.json')
+const verifiers = loadFixture<UtilityCase[]>('check-digit.json')
 
 describe('format', () => {
   it.each(valid)(
@@ -43,6 +53,58 @@ describe('format', () => {
       expect(format(rut, { dots: false })).toBe(formattedNoDots)
     },
   )
+
+  it('formats K in lowercase when requested', () => {
+    const rut = parse('9.068.826-k')
+    expect(format(rut, { uppercase: false })).toBe('9.068.826-k')
+    expect(format(rut, { dots: false, uppercase: false })).toBe('9068826-k')
+  })
+})
+
+describe('clean', () => {
+  it.each(cleaned)('normalizes $input', ({ input, output }) => {
+    expect(clean(input)).toBe(output)
+  })
+
+  it('returns an empty string for non-string input', () => {
+    expect(clean(189726317)).toBe('')
+  })
+})
+
+describe('getVerifier', () => {
+  it.each(verifiers)('calculates $output for $input', ({ input, output }) => {
+    expect(getVerifier(input)).toBe(output)
+  })
+
+  it.each([
+    null,
+    18972631,
+    '',
+    'abc',
+    '12K',
+    '12 34',
+    '1',
+    '123456',
+    '123456789',
+    '0000000',
+  ])(
+    'returns null for invalid body $input',
+    (input) => {
+      expect(getVerifier(input)).toBeNull()
+    },
+  )
+})
+
+describe('compare', () => {
+  it('compares canonical values of valid inputs', () => {
+    expect(compare('18.972.631-7', '189726317')).toBe(true)
+    expect(compare('18.972.631-7', '9.068.826-k')).toBe(false)
+  })
+
+  it('never considers invalid inputs equal', () => {
+    expect(compare('18.972.631-0', '18.972.631-0')).toBe(false)
+    expect(compare(null, null)).toBe(false)
+  })
 })
 
 describe('safeParse / parse / is', () => {

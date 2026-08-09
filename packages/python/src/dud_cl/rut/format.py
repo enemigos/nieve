@@ -1,18 +1,18 @@
 from __future__ import annotations
 
-from rut_cl.types import Rut
+from .types import Rut
 
 
-def format(rut: Rut, *, dots: bool = True) -> str:
+def format(rut: Rut, *, dots: bool = True, uppercase: bool = True) -> str:
     """Format a validated RUT for display."""
 
     body = rut[:-1]
-    dv = rut[-1]
+    verifier = rut[-1] if uppercase else rut[-1].lower()
 
     if not dots:
-        return f"{body}-{dv}"
+        return f"{body}-{verifier}"
 
-    result = f"{body[-3:]}-{dv}"
+    result = f"{body[-3:]}-{verifier}"
     rest = body[:-3]
 
     while len(rest) > 3:

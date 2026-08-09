@@ -4,6 +4,6 @@
  */
 export function clean(input: unknown): string {
   return typeof input === 'string'
-    ? input.replace(/^0+|[^0-9kK]+/g, '').toUpperCase()
+    ? input.replace(/[^0-9kK]+/g, '').replace(/^0+/, '').toUpperCase()
     : ''
 }

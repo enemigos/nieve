@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "rut-cl"
+name = "dud-cl-rut"
 version = "0.1.0"
 description = "Lean Chilean RUT validation and formatting for Python"
 readme = "README.md"
@@ -33,7 +33,10 @@ Issues = "https://github.com/panquequelol/rut-cl/issues"
 dev = ["pytest>=8.0", "mypy>=1.14"]
 
 [tool.hatch.build.targets.sdist]
-include = ["src/rut_cl", "README.md", "LICENSE"]
+include = ["src/dud_cl/rut", "README.md", "LICENSE"]
+
+[tool.hatch.build.targets.wheel]
+packages = ["src/dud_cl"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -42,4 +45,4 @@ testpaths = ["tests"]
 python_version = "3.10"
 strict = true
 mypy_path = "src"
-packages = ["rut_cl"]
+packages = ["dud_cl.rut"]

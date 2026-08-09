@@ -36,4 +36,5 @@ export type SafeParseResult =
 
 export type FormatOptions = {
   readonly dots?: boolean
+  readonly uppercase?: boolean
 }

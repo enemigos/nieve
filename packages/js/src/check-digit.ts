@@ -26,3 +26,16 @@ export function checkDigit(body: string): string {
 
   return String(digit)
 }
+
+/**
+ * Compute the modulo-11 verifier for a numeric RUT body.
+ * Common separators are ignored; invalid bodies return null.
+ */
+export function getVerifier(input: unknown): string | null {
+  if (typeof input !== 'string') {
+    return null
+  }
+
+  const body = input.trim().replace(/[.,-]/g, '')
+  return /^[1-9]\d{6,7}$/.test(body) ? checkDigit(body) : null
+}

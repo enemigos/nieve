@@ -1,4 +1,4 @@
-# rut-cl (TypeScript)
+# @dud-cl/rut
 
 Lean Chilean RUT validation and formatting for TypeScript.
 
@@ -7,13 +7,13 @@ Inspired by [rut.js](https://github.com/jlobos/rut.js), with a Valibot/Zod-shape
 ## Install
 
 ```bash
-npm i rut-cl
+npm i @dud-cl/rut
 ```
 
 ## Usage
 
 ```ts
-import * as rut from 'rut-cl'
+import * as rut from '@dud-cl/rut'
 
 const value = rut.parse('18.972.631-7')
 // branded Rut string: '189726317'
@@ -21,17 +21,24 @@ const value = rut.parse('18.972.631-7')
 rut.format(value)                  // '18.972.631-7'
 rut.format(value, { dots: false }) // '18972631-7'
 
+const kValue = rut.parse('9.068.826-k')
+rut.format(kValue, { uppercase: false }) // '9.068.826-k'
+
 rut.safeParse('18.972.631-0')
 // { success: false, issue: { kind: 'check_digit', ... } }
 
 rut.is('9068826k') // true
+
+rut.clean('0018.972.631-7')                 // '189726317'
+rut.getVerifier('9.068.826')                 // 'K'
+rut.compare('18.972.631-7', '189726317')     // true
 ```
 
 ### With Zod
 
 ```ts
 import * as z from 'zod'
-import * as rut from 'rut-cl'
+import * as rut from '@dud-cl/rut'
 
 const schema = z.object({
   nationalId: z.string().refine(rut.is, { message: 'Invalid RUT' }),
@@ -42,20 +49,12 @@ const schema = z.object({
 
 ```ts
 import * as v from 'valibot'
-import * as rut from 'rut-cl'
+import * as rut from '@dud-cl/rut'
 
 const schema = v.object({
   nationalId: v.pipe(v.string(), v.check(rut.is, 'Invalid RUT')),
 })
 ```
-
-### rut.js-compatible helpers
-
-```ts
-import { validate, clean, format, getCheckDigit } from 'rut-cl/legacy'
-```
-
-These ESM helpers preserve rut.js's permissive behavior for documented string inputs. Use the root entry point for strict validation.
 
 ## API
 
@@ -64,7 +63,10 @@ These ESM helpers preserve rut.js's permissive behavior for documented string in
 | `parse(input)` | Validate; return branded cleaned RUT or throw `RutError` |
 | `safeParse(input)` | Validate; return `{ success, output }` or `{ success: false, issue }` |
 | `is(input)` | Return whether input is valid |
-| `format(rut, options?)` | Format a validated `Rut` (`dots` defaults to `true`) |
+| `format(rut, options?)` | Format a validated `Rut`; configure dots and `K` casing |
+| `clean(input)` | Normalize without validating |
+| `compare(left, right)` | Compare canonical values; both inputs must be valid |
+| `getVerifier(body)` | Calculate a valid body verifier; return `null` if invalid |
 
 Canonical form after a successful parse is the cleaned string (`189726317`).
 
@@ -81,5 +83,3 @@ pnpm build
 ## License
 
 MIT
-
-The legacy helpers follow [rut.js](https://github.com/jlobos/rut.js) behavior (MIT).

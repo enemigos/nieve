@@ -3,10 +3,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "pnpm --filter rut-cl build",
-    "test": "pnpm --filter rut-cl test",
-    "typecheck": "pnpm --filter rut-cl typecheck",
-    "lint:package": "pnpm --filter rut-cl lint:package"
+    "build": "pnpm --filter @dud-cl/rut build",
+    "test": "pnpm --filter @dud-cl/rut test",
+    "typecheck": "pnpm --filter @dud-cl/rut typecheck",
+    "lint:package": "pnpm --filter @dud-cl/rut lint:package"
   },
   "engines": {
     "node": ">=20"

@@ -82,3 +82,15 @@ export function parse(input: unknown): Rut {
 export function is(input: unknown): boolean {
   return safeParse(input).success
 }
+
+/** Return whether two valid RUT inputs have the same canonical value. */
+export function compare(left: unknown, right: unknown): boolean {
+  const leftResult = safeParse(left)
+  const rightResult = safeParse(right)
+
+  return (
+    leftResult.success &&
+    rightResult.success &&
+    leftResult.output === rightResult.output
+  )
+}

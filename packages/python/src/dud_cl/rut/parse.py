@@ -2,9 +2,9 @@ from __future__ import annotations
 
 import re
 
-from rut_cl._check_digit import _check_digit
-from rut_cl.error import RutError
-from rut_cl.types import (
+from ._check_digit import _check_digit
+from .error import RutError
+from .types import (
     CheckDigitIssue,
     FormatIssue,
     LengthIssue,
@@ -21,6 +21,15 @@ _RUT_FORMAT = re.compile(r"^([1-9][0-9]{0,2}(\.?[0-9]{3})*)-?[0-9kK]$")
 # Body 7-8 digits + DV. Rejects short modulo-11 false positives.
 _MIN_CLEANED_LENGTH = 8
 _MAX_CLEANED_LENGTH = 9
+
+
+def clean(input: object) -> str:
+    """Normalize a RUT-like string without validating it."""
+    if not isinstance(input, str):
+        return ""
+
+    cleaned = re.sub(r"[^0-9kK]+", "", input).lstrip("0")
+    return cleaned.upper()
 
 
 def safe_parse(input: object) -> SafeParseResult:
@@ -97,3 +106,14 @@ def is_rut(input: object) -> bool:
     Named ``is_rut`` because ``is`` is a Python keyword (TS export is ``is``).
     """
     return safe_parse(input).success
+
+
+def compare(left: object, right: object) -> bool:
+    """Return whether two valid RUT inputs have the same canonical value."""
+    left_result = safe_parse(left)
+    right_result = safe_parse(right)
+    return (
+        left_result.success
+        and right_result.success
+        and left_result.output == right_result.output
+    )
