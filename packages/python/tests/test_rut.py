@@ -17,7 +17,7 @@ def load_fixture(name: str) -> list[dict[str, object]]:
 valid = load_fixture("valid.json")
 invalid = load_fixture("invalid.json")
 cleaned = load_fixture("clean.json")
-verifiers = load_fixture("check-digit.json")
+verifiers = load_fixture("verifier.json")
 
 
 @pytest.mark.parametrize("case", valid)
@@ -28,9 +28,9 @@ def test_format(case: dict[str, object]) -> None:
 
 
 def test_format_lowercase_k() -> None:
-    value = rut.parse("9.068.826-k")
-    assert rut.format(value, uppercase=False) == "9.068.826-k"
-    assert rut.format(value, dots=False, uppercase=False) == "9068826-k"
+    value = rut.parse("21.272.789-K")
+    assert rut.format(value, uppercase=False) == "21.272.789-k"
+    assert rut.format(value, dots=False, uppercase=False) == "21272789-k"
 
 
 @pytest.mark.parametrize("case", cleaned)
@@ -67,12 +67,12 @@ def test_get_verifier_invalid_body(value: object) -> None:
 
 
 def test_compare_valid_inputs() -> None:
-    assert rut.compare("18.972.631-7", "189726317") is True
-    assert rut.compare("18.972.631-7", "9.068.826-k") is False
+    assert rut.compare("21.272.789-K", "21272789K") is True
+    assert rut.compare("21.272.789-K", "9.068.826-k") is False
 
 
 def test_compare_invalid_inputs() -> None:
-    assert rut.compare("18.972.631-0", "18.972.631-0") is False
+    assert rut.compare("21.272.789-0", "21.272.789-0") is False
     assert rut.compare(None, None) is False
 
 
@@ -108,13 +108,57 @@ def test_rejects_unrelated_input_without_extracting_digits() -> None:
     assert result.issue.kind == "format"
 
 
+@pytest.mark.parametrize(
+    ("input", "spanish", "english"),
+    [
+        (
+            189726317,
+            'El RUT debe ser una cadena de texto. Usa un valor como "21.272.789-K" '
+            "e intenta de nuevo.",
+            'RUT must be a string. Use a value such as "21.272.789-K", '
+            "then try again.",
+        ),
+        (
+            "abc",
+            "El formato del RUT es incorrecto. Usa 7 u 8 d\u00edgitos y un "
+            'verificador, por ejemplo, "21.272.789-K".',
+            "RUT format is incorrect. Use 7 or 8 digits and a verifier, "
+            'for example, "21.272.789-K".',
+        ),
+        (
+            "1-9",
+            "El cuerpo del RUT debe tener 7 u 8 d\u00edgitos antes del verificador; "
+            "tiene 1. Corrige el cuerpo e intenta de nuevo.",
+            "RUT body must contain 7 or 8 digits before the verifier; it "
+            "contains 1. Correct the body, then try again.",
+        ),
+        (
+            "21.272.789-0",
+            'El verificador no coincide. Reemplaza "0" por "K".',
+            'RUT verifier does not match. Replace "0" with "K".',
+        ),
+    ],
+)
+def test_actionable_messages(input: object, spanish: str, english: str) -> None:
+    spanish_result = rut.safe_parse(input)
+    assert spanish_result.success is False
+    assert spanish_result.issue.message == spanish
+
+    english_result = rut.safe_parse(input, "en")
+    assert english_result.success is False
+    assert english_result.issue.message == english
+
+
 @pytest.mark.parametrize("value", ["1", "17", "173", "1735", "17353"])
 def test_rejects_short_progressive_input(value: str) -> None:
     assert rut.is_rut(value) is False
 
 
 def test_rut_error_is_value_error_with_single_issue() -> None:
-    with pytest.raises(ValueError, match="check digit") as error:
-        rut.parse("18.972.631-0")
+    with pytest.raises(ValueError, match="El verificador no coincide") as error:
+        rut.parse("21.272.789-0")
     assert isinstance(error.value, rut.RutError)
-    assert error.value.issue.kind == "check_digit"
+    assert error.value.issue.kind == "verifier"
+
+    with pytest.raises(rut.RutError, match="RUT verifier does not match"):
+        rut.parse("21.272.789-0", "en")

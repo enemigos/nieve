@@ -1,7 +1,7 @@
 /**
- * Compute the modulo-11 check digit for a RUT body (digits only, no DV).
+ * Compute the modulo-11 verifier for a RUT body (digits only, no DV).
  */
-export function checkDigit(body: string): string {
+export function calculateVerifier(body: string): string {
   const digits = Array.from(body, Number)
 
   if (digits.length === 0 || digits.includes(Number.NaN)) {
@@ -37,5 +37,5 @@ export function getVerifier(input: unknown): string | null {
   }
 
   const body = input.trim().replace(/[.,-]/g, '')
-  return /^[1-9]\d{6,7}$/.test(body) ? checkDigit(body) : null
+  return /^[1-9]\d{6,7}$/.test(body) ? calculateVerifier(body) : null
 }

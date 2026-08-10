@@ -1,7 +1,9 @@
 declare const rutBrand: unique symbol
 
-/** Canonical cleaned RUT string, e.g. `"189726317"`. */
+/** Canonical cleaned RUT string, e.g. `"21272789K"`. */
 export type Rut = string & { readonly [rutBrand]: true }
+
+export type Language = 'es' | 'en'
 
 export type RutIssue =
   | {
@@ -20,7 +22,7 @@ export type RutIssue =
       readonly input: string
     }
   | {
-      readonly kind: 'check_digit'
+      readonly kind: 'verifier'
       readonly message: string
       readonly input: string
       readonly expected: string

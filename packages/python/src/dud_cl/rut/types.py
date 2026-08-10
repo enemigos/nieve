@@ -4,6 +4,7 @@ from dataclasses import dataclass
 from typing import Literal, NewType, TypeAlias
 
 Rut = NewType("Rut", str)
+Language: TypeAlias = Literal["es", "en"]
 
 
 @dataclass(frozen=True, slots=True)
@@ -28,15 +29,15 @@ class LengthIssue:
 
 
 @dataclass(frozen=True, slots=True)
-class CheckDigitIssue:
-    kind: Literal["check_digit"]
+class VerifierIssue:
+    kind: Literal["verifier"]
     message: str
     input: str
     expected: str
     received: str
 
 
-RutIssue: TypeAlias = TypeIssue | FormatIssue | LengthIssue | CheckDigitIssue
+RutIssue: TypeAlias = TypeIssue | FormatIssue | LengthIssue | VerifierIssue
 
 
 @dataclass(frozen=True, slots=True)

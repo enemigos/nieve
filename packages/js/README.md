@@ -15,32 +15,33 @@ npm i @dud-cl/rut
 ```ts
 import * as rut from '@dud-cl/rut'
 
-const value = rut.parse('18.972.631-7')
-// RUT limpio con marca de tipo: '189726317'
+const value = rut.parse('21.272.789-K')
+// RUT limpio con marca de tipo: '21272789K'
 
-rut.format(value)                  // '18.972.631-7'
-rut.format(value, { dots: false }) // '18972631-7'
+rut.format(value)                              // '21.272.789-K'
+rut.format(value, { dots: false })             // '21272789-K'
+rut.format(value, { uppercase: false })        // '21.272.789-k'
 
-const kValue = rut.parse('9.068.826-k')
-rut.format(kValue, { uppercase: false }) // '9.068.826-k'
-
-rut.safeParse('18.972.631-0')
+rut.safeParse('21.272.789-0')
 // {
 //   success: false,
 //   issue: {
-//     kind: 'check_digit',
-//     message: 'Invalid check digit: expected 7, received 0',
-//     input: '18.972.631-0',
-//     expected: '7',
+//     kind: 'verifier',
+//     message: 'El verificador no coincide. Reemplaza "0" por "K".',
+//     input: '21.272.789-0',
+//     expected: 'K',
 //     received: '0',
 //   },
 // }
 
-rut.is('9068826k') // true
+rut.safeParse('21.272.789-0', 'en')
+// issue.message: 'RUT verifier does not match. Replace "0" with "K".'
 
-rut.clean('0018.972.631-7')                 // '189726317'
-rut.getVerifier('9.068.826')                 // 'K'
-rut.compare('18.972.631-7', '189726317')     // true
+rut.is('21272789k') // true
+
+rut.clean('0021.272.789-k')                 // '21272789K'
+rut.getVerifier('21.272.789')               // 'K'
+rut.compare('21.272.789-K', '21272789K')    // true
 ```
 
 ### Con Zod
@@ -69,15 +70,17 @@ const schema = v.object({
 
 | API | Uso |
 |---|---|
-| `parse(input)` | Valida la entrada. Devuelve el RUT limpio o lanza `RutError`. |
-| `safeParse(input)` | Valida la entrada sin lanzar errores. Devuelve el resultado. |
+| `parse(input, language?)` | Valida la entrada. Devuelve el RUT limpio o lanza `RutError`. |
+| `safeParse(input, language?)` | Valida la entrada sin lanzar errores. Devuelve el resultado. |
 | `is(input)` | Indica si la entrada es correcta. |
 | `format(rut, options?)` | Da formato a un RUT validado. Usa `dots` y `uppercase` para definir la salida. |
 | `clean(input)` | Quita el formato sin validar. |
 | `compare(left, right)` | Compara dos RUT correctos. |
 | `getVerifier(body)` | Calcula el verificador de un cuerpo correcto. Devuelve `null` cuando el cuerpo es incorrecto. |
 
-Tras validar la entrada, `parse` devuelve la cadena limpia (`189726317`).
+Tras validar la entrada, `parse` devuelve la cadena limpia (`21272789K`).
+
+Los errores usan espa&ntilde;ol (`es`) por defecto. Pasa `en` como segundo argumento de `parse` o `safeParse` para recibirlos en ingl&eacute;s.
 
 La cadena limpia tiene 8 o 9 caracteres: un cuerpo de 7 u 8 cifras y un verificador. Entrega a `format` un valor devuelto por `parse`.
 

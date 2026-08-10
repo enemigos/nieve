@@ -1,6 +1,6 @@
 /**
  * Normalize a RUT-like string: strip non-digits/K, uppercase K, drop leading zeros.
- * Does not validate check digit or format.
+ * Does not validate the verifier or format.
  */
 export function clean(input: unknown): string {
   return typeof input === 'string'

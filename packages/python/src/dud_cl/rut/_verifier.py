@@ -1,8 +1,8 @@
 from __future__ import annotations
 
 
-def _check_digit(body: str) -> str:
-    """Compute the modulo-11 check digit for a RUT body (digits only, no DV)."""
+def _calculate_verifier(body: str) -> str:
+    """Compute the modulo-11 verifier for a RUT body (digits only, no DV)."""
     if body == "" or not body.isascii() or not body.isdigit():
         raise ValueError(f'"{body}" as RUT is invalid')
 
@@ -33,4 +33,4 @@ def get_verifier(input: object) -> str | None:
     ):
         return None
 
-    return _check_digit(body)
+    return _calculate_verifier(body)

@@ -1,11 +1,11 @@
 [
-  { "input": "18.972.631-0", "kind": "check_digit" },
+  { "input": "21.272.789-0", "kind": "verifier" },
   { "input": "18,972,631-7", "kind": "format" },
   { "input": "18*972*631-7", "kind": "format" },
   { "input": "18-972-631-7", "kind": "format" },
   { "input": "1\u0668\u0669\u0667\u0662\u0666\u0663\u0661-7", "kind": "format" },
   { "input": "error18.972.631-7", "kind": "format" },
-  { "input": "9068826-1", "kind": "check_digit" },
+  { "input": "9068826-1", "kind": "verifier" },
   { "input": "", "kind": "format" },
   { "input": "0", "kind": "format" },
   { "input": "00.000.000-0", "kind": "format" },
