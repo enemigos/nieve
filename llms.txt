@@ -2,7 +2,7 @@
 
 > Strict Chilean RUT parsing, validation, formatting, comparison, and verifier calculation for TypeScript and Python.
 
-This project provides matching TypeScript and Python APIs for Chilean RUT values. Use `@dud-cl/rut` in TypeScript or JavaScript. Use `dud-cl-rut` in Python.
+This project provides matching core parsing, validation, formatting, comparison, and verifier APIs for TypeScript and Python. Use `@dud-cl/rut` in TypeScript or JavaScript. Use `dud-cl-rut` in Python. TypeScript additionally provides `formatPartial` for progressive browser input; it is intentionally not part of the Python package.
 
 The project exists because the legacy RUT packages still receive substantial use but no longer publish regular fixes. `rut.js` is the most-downloaded legacy package in this comparison. Its latest npm release is `2.1.0`, published on October 27, 2021. Its repository received two runtime fixes in April 2024 and dependency updates in November 2024, but those changes did not produce a new npm release. The repository still has open validation and formatting issues. The `rutjs` package is version `0.1.1`, published on July 21, 2013. Its `jeam/rut` repository has had no commits since July 2013 and still has an open validation issue.
 
@@ -59,6 +59,7 @@ rut.parse(input: unknown, language?: Language): rut.Rut
 rut.safeParse(input: unknown, language?: Language): rut.SafeParseResult
 rut.is(input: unknown): boolean
 rut.format(value: rut.Rut, options?: { dots?: boolean; uppercase?: boolean }): string
+rut.formatPartial(input: unknown): string
 rut.clean(input: unknown): string
 rut.compare(left: unknown, right: unknown): boolean
 rut.getVerifier(body: unknown): string | null
@@ -85,7 +86,9 @@ const result = rut.safeParse('21.272.789-0', 'en')
 
 Issue kinds are `type`, `format`, `length`, and `verifier`. Spanish (`es`) is the default language. Pass `en` as the second argument to `parse` or `safeParse` for English messages.
 
-`format` accepts a parsed `Rut`. Dots and uppercase `K` are enabled by default.
+`format` accepts a parsed `Rut`. Dots and uppercase `K` are enabled by default. `formatPartial` formats one partial RUT token while it is being edited. It normalizes dots, hyphens, whitespace, and a final lowercase `k`. Input containing other characters, more than nine meaningful characters, or a non-final `K` is returned unchanged, so the function does not extract or truncate a RUT from surrounding text.
+
+**Warning:** `formatPartial` output is untrusted. Normalizing separators and whitespace can make raw syntax rejected by strict parsing become parseable. If exact raw syntax matters, call `safeParse(raw)` and display its validated output with `format`. If normalization is acceptable, call `safeParse(formatPartial(raw))` before accepting or storing the value. `formatPartial` never validates body length or the verifier.
 
 ```ts
 const value = rut.parse('21.272.789-K')
@@ -93,6 +96,9 @@ const value = rut.parse('21.272.789-K')
 rut.format(value)                              // '21.272.789-K'
 rut.format(value, { dots: false })             // '21272789-K'
 rut.format(value, { uppercase: false })        // '21.272.789-k'
+rut.formatPartial('17353')                     // '1.735-3'
+rut.formatPartial(' 18-972-631-7 ')            // '18.972.631-7'
+rut.formatPartial('prefix21.272.789-K')         // unchanged
 rut.clean('0021.272.789-k')                    // '21272789K'
 rut.compare('21.272.789-K', '21272789K')       // true
 rut.getVerifier('21.272.789')                  // 'K'
@@ -146,19 +152,20 @@ result = rut.safe_parse("21.272.789-0", "en")
 
 **Recipe: Zod**
 
-Use a transform to return the branded canonical `Rut`. Forward the library message to Zod.
+Use a transform to return the branded canonical `Rut`. Forward the library message to Zod and retain the complete `RutIssue` in custom issue parameters. Start with `z.unknown()` when rut-cl should produce localized type issues too.
 
 ```ts
 import { z } from 'zod'
-import { safeParse } from '@dud-cl/rut'
+import { safeParse, type RutIssue } from '@dud-cl/rut'
 
-const rutSchema = z.string().transform((input, context) => {
+const rutSchema = z.unknown().transform((input, context) => {
   const result = safeParse(input, 'en')
 
   if (!result.success) {
     context.addIssue({
       code: 'custom',
       message: result.issue.message,
+      params: { rutIssue: result.issue },
     })
     return z.NEVER
   }
@@ -176,8 +183,17 @@ const result = userSchema.safeParse({
 
 if (result.success) {
   result.data.nationalId // Branded Rut: '21272789K'
+} else {
+  const issue = result.error.issues[0]
+
+  if (issue?.code === 'custom') {
+    const rutIssue = issue.params?.rutIssue as RutIssue | undefined
+    rutIssue?.kind // 'type' | 'format' | 'length' | 'verifier'
+  }
 }
 ```
+
+Zod preserves custom `params` when reading `ZodError` directly. Some form resolvers retain only the issue code and message. If application behavior depends on `RutIssue.kind` or verifier metadata, keep the original `RutIssue` in form state or verify that the selected resolver preserves custom parameters.
 
 **Recipe: Valibot**
 
@@ -235,14 +251,17 @@ assert user.national_id == "21272789K"
 
 **Recipe: React form**
 
-Validate on submit. Show the exact issue next to the field. Pass the canonical `Rut` to application code.
+Format and validate while the user types. Keep the complete discriminated result in state, show the exact issue next to the field, and pass the canonical `Rut` to application code.
+
+This recipe intentionally accepts separator and whitespace normalization. Validate the raw input before formatting instead when the original syntax must pass strict parsing.
 
 ```tsx
 import { useState, type FormEvent } from 'react'
 import {
-  format,
+  formatPartial,
   safeParse,
   type Rut,
+  type SafeParseResult,
 } from '@dud-cl/rut'
 
 type RutFormProps = {
@@ -250,22 +269,21 @@ type RutFormProps = {
 }
 
 export function RutForm({ onValid }: RutFormProps) {
-  const [input, setInput] = useState('21.272.789-K')
-  const [error, setError] = useState<string | null>(null)
+  const [input, setInput] = useState('')
+  const [validation, setValidation] = useState<SafeParseResult | null>(null)
+
+  const issue = validation?.success === false ? validation.issue : null
+
+  function edit(raw: string) {
+    const next = formatPartial(raw)
+    setInput(next)
+    setValidation(next ? safeParse(next, 'en') : null)
+  }
 
   function submit(event: FormEvent<HTMLFormElement>) {
     event.preventDefault()
 
-    const result = safeParse(input, 'en')
-
-    if (!result.success) {
-      setError(result.issue.message)
-      return
-    }
-
-    setError(null)
-    setInput(format(result.output))
-    onValid(result.output)
+    if (validation?.success) onValid(validation.output)
   }
 
   return (
@@ -275,15 +293,16 @@ export function RutForm({ onValid }: RutFormProps) {
         id="rut"
         name="rut"
         value={input}
-        onChange={(event) => {
-          setInput(event.target.value)
-          setError(null)
-        }}
-        aria-invalid={error !== null}
-        aria-describedby={error ? 'rut-error' : undefined}
+        onChange={(event) => edit(event.target.value)}
+        aria-invalid={issue !== null}
+        aria-describedby={issue ? 'rut-error' : undefined}
       />
-      {error && <p id="rut-error" role="alert">{error}</p>}
-      <button type="submit">Continue</button>
+      {issue && (
+        <p id="rut-error" data-rut-issue={issue.kind}>
+          {issue.message}
+        </p>
+      )}
+      <button type="submit" disabled={!validation?.success}>Continue</button>
     </form>
   )
 }

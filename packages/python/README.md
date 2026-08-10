@@ -11,11 +11,11 @@
 
 Validate and format Chilean RUT values in Python.
 
-The Python API matches the TypeScript behavior and uses `snake_case` names.
+The Python core validation API matches the TypeScript behavior and uses `snake_case` names. The TypeScript-only `formatPartial` helper is for progressive browser input and is intentionally omitted here.
 
 ## Motivation
 
-The last releases of the legacy JavaScript libraries [`rut.js`](https://github.com/jlobos/rut.js) and [`rutjs`](https://github.com/jeam/rut) were published in 2021 and 2013, respectively, and they still have open issues. This package brings strict validation and structured issues to Python while matching the TypeScript API. See the [agent reference](https://github.com/panquequelol/rut-cl/blob/main/llms.txt) for complete contracts and recipes.
+The last releases of the legacy JavaScript libraries [`rut.js`](https://github.com/jlobos/rut.js) and [`rutjs`](https://github.com/jeam/rut) were published in 2021 and 2013, respectively, and they still have open issues. This package brings strict validation and structured issues to Python while matching the TypeScript core validation API. See the [agent reference](https://github.com/panquequelol/rut-cl/blob/main/llms.txt) for complete contracts and recipes.
 
 ## Install
 

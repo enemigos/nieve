@@ -34,6 +34,7 @@ const value = rut.parse('21.272.789-K')
 rut.format(value)                              // '21.272.789-K'
 rut.format(value, { dots: false })             // '21272789-K'
 rut.format(value, { uppercase: false })        // '21.272.789-k'
+rut.formatPartial('17353')                     // '1.735-3' (partial input)
 
 rut.safeParse('21.272.789-0', 'en')
 // {
@@ -60,9 +61,51 @@ rut.compare('21.272.789-K', '21272789K')    // true
 import * as z from 'zod'
 import * as rut from '@dud-cl/rut'
 
-const schema = z.object({
-  nationalId: z.string().refine(rut.is, { message: 'Invalid RUT' }),
+const rutSchema = z.unknown().transform((input, context) => {
+  const result = rut.safeParse(input, 'en')
+
+  if (!result.success) {
+    context.addIssue({
+      code: 'custom',
+      message: result.issue.message,
+      params: { rutIssue: result.issue },
+    })
+    return z.NEVER
+  }
+
+  return result.output
 })
+
+const schema = z.object({
+  nationalId: rutSchema,
+})
+```
+
+Zod receives `RutIssue.message`, successful data becomes a branded `Rut`, and the complete issue remains available in `params.rutIssue`. Some form resolvers discard `params`; keep the `RutIssue` returned by `safeParse` in form state when UI behavior depends on `kind`.
+
+### With React
+
+Format while the user types and retain the complete result so `kind`, `message`, `expected`, and `received` stay available.
+
+**Warning:** `formatPartial` can turn raw input rejected by strict parsing into accepted input by normalizing dots, hyphens, and whitespace. Never trust its output without validation. If exact raw syntax matters, call `safeParse(raw)` and display the validated `Rut` with `format`. If normalization is acceptable, call `safeParse(formatPartial(raw))` before storing the value.
+
+```tsx
+import { useState } from 'react'
+import * as rut from '@dud-cl/rut'
+
+const [input, setInput] = useState('')
+const [validation, setValidation] = useState<rut.SafeParseResult | null>(null)
+
+function changeInput(raw: string) {
+  const next = rut.formatPartial(raw)
+  setInput(next)
+  setValidation(next ? rut.safeParse(next, 'en') : null)
+}
+
+const issue = validation?.success === false ? validation.issue : null
+
+// <input value={input} onChange={(event) => changeInput(event.target.value)} />
+// {issue && <p>{issue.message}</p>}
 ```
 
 ### With Valibot
@@ -84,6 +127,7 @@ const schema = v.object({
 | `safeParse(input, language?)` | Validate input without throwing. Return a structured result. |
 | `is(input)` | Return whether the input is valid. |
 | `format(rut, options?)` | Format a validated RUT. Use `dots` and `uppercase` to control the output. |
+| `formatPartial(input)` | Format partial input for display without validating it. |
 | `clean(input)` | Normalize input without validating it. |
 | `compare(left, right)` | Compare two valid RUT values. |
 | `getVerifier(body)` | Calculate the verifier for a valid body. Return `null` for an invalid body. |
@@ -92,7 +136,7 @@ After validation, `parse` returns the canonical string (`21272789K`).
 
 Errors use Spanish (`es`) by default. Pass `en` as the second argument to `parse` or `safeParse` for English messages.
 
-The canonical string contains 8 or 9 characters: a 7- or 8-digit body and its verifier. Pass a value returned by `parse` to `format`.
+The canonical string contains 8 or 9 characters: a 7- or 8-digit body and its verifier. Pass a value returned by `parse` to `format`. Use `formatPartial` only for editable display values. Its output is untrusted: normalization can make otherwise invalid raw syntax acceptable. Validate the raw input when exact syntax matters or validate the formatted output before accepting it. Unsupported or overlong text remains unchanged to avoid extracting a RUT from surrounding content.
 
 ## Development
 

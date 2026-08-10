@@ -6,6 +6,7 @@ import {
   clean,
   compare,
   format,
+  formatPartial,
   getVerifier,
   is,
   parse,
@@ -58,6 +59,46 @@ describe('format', () => {
     const rut = parse('21.272.789-K')
     expect(format(rut, { uppercase: false })).toBe('21.272.789-k')
     expect(format(rut, { dots: false, uppercase: false })).toBe('21272789-k')
+  })
+})
+
+describe('formatPartial', () => {
+  it.each([
+    ['', ''],
+    ['1', '1'],
+    ['17', '1-7'],
+    ['173', '17-3'],
+    ['1735', '173-5'],
+    ['17353', '1.735-3'],
+    ['189726317', '18.972.631-7'],
+    ['21.272.789-k', '21.272.789-K'],
+    [' 18-972-631-7 ', '18.972.631-7'],
+    ['21 272 789 k', '21.272.789-K'],
+  ])('formats editable input $input', (input, output) => {
+    expect(formatPartial(input)).toBe(output)
+  })
+
+  it('returns an empty string for non-string input', () => {
+    expect(formatPartial(189726317)).toBe('')
+  })
+
+  it('formats partial input without making it valid', () => {
+    const input = formatPartial('17353')
+
+    expect(input).toBe('1.735-3')
+    expect(safeParse(input).success).toBe(false)
+  })
+
+  it.each([
+    'prefix21.272.789-K',
+    '21.272.789-K extra',
+    '18,972,631-7',
+    '189726317999',
+    '2127K2789',
+    'abc',
+  ])('does not extract or truncate a RUT from $input', (input) => {
+    expect(formatPartial(input)).toBe(input)
+    expect(safeParse(formatPartial(input)).success).toBe(false)
   })
 })
 
