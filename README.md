@@ -13,11 +13,9 @@ Una librer&iacute;a para validar y formatear RUT chilenos en TypeScript y Python
 
 ## Por qu&eacute; existe
 
-Necesit&aacute;bamos validar RUT en TypeScript y Python sin mantener dos implementaciones distintas. Las alternativas m&aacute;s usadas llevan a&ntilde;os sin publicar versiones y todav&iacute;a tienen bugs abiertos. Por eso hicimos una implementaci&oacute;n estricta y compartimos los mismos casos de prueba entre ambos lenguajes.
+Necesit&aacute;bamos validar RUT en TypeScript y Python sin mantener dos implementaciones distintas. Las alternativas m&aacute;s usadas llevan a&ntilde;os sin publicar versiones (`rut.js` desde 2021 y `rutjs` desde 2013) y todav&iacute;a tienen bugs abiertos. Por eso hicimos una implementaci&oacute;n estricta y compartimos los mismos casos de prueba entre ambos lenguajes.
 
-No intenta sacar un RUT de cualquier texto. Valida la entrada completa y rechaza cuerpos demasiado cortos o largos.
-
-Los contratos y recetas est&aacute;n en la [referencia para agentes](./llms.txt).
+Los contratos y recetas est&aacute;n en la [referencia para LLMs](./llms.txt). La [referencia para humanos](https://dud.cl/rut/) est&aacute; en dud.cl.
 
 ## Instalar
 
