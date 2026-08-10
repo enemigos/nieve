@@ -106,6 +106,7 @@ def test_rejects_unrelated_input_without_extracting_digits() -> None:
     result = rut.safe_parse("chuma1996@gmail.com")
     assert result.success is False
     assert result.issue.kind == "format"
+    assert rut.is_rut(rut.clean("chuma1996@gmail.com")) is False
 
 
 @pytest.mark.parametrize(

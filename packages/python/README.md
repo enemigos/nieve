@@ -4,6 +4,10 @@ Valida y da formato a valores RUT de Chile en Python.
 
 La API de Python mantiene el mismo comportamiento y usa nombres `snake_case`.
 
+## Motivaci&oacute;n
+
+Las &uacute;ltimas versiones de las bibliotecas JavaScript hist&oacute;ricas [`rut.js`](https://github.com/jlobos/rut.js) y [`rutjs`](https://github.com/jeam/rut) se publicaron en 2021 y 2013, respectivamente, y mantienen errores abiertos. Este paquete lleva una validaci&oacute;n estricta y errores estructurados al ecosistema Python sin perder paridad con TypeScript. Consulta la [referencia para agentes](https://github.com/panquequelol/rut-cl/blob/main/llms.txt) para ver contratos y recetas completas.
+
 ## Instalar
 
 ```bash
@@ -23,9 +27,19 @@ rut.format(value, dots=False)        # "21272789-K"
 rut.format(value, uppercase=False)   # "21.272.789-k"
 
 rut.safe_parse("21.272.789-0")
-# SafeParseFailure(success=False, issue=VerifierIssue(...))
+# SafeParseFailure(
+#     success=False,
+#     issue=VerifierIssue(
+#         kind="verifier",
+#         message='El verificador no coincide. Reemplaza "0" por "K".',
+#         input="21.272.789-0",
+#         expected="K",
+#         received="0",
+#     ),
+# )
 
-rut.safe_parse("21.272.789-0", "en")  # language="en"
+rut.safe_parse("21.272.789-0", "en")
+# issue.message: 'RUT verifier does not match. Replace "0" with "K".'
 
 rut.is_rut("21272789k")  # True  (el nombre en TypeScript es `is`)
 

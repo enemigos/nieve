@@ -1,0 +1,430 @@
+# dud-cl RUT
+
+> Strict Chilean RUT parsing, validation, formatting, comparison, and verifier calculation for TypeScript and Python.
+
+This project provides matching TypeScript and Python APIs for Chilean RUT values. Use `@dud-cl/rut` in TypeScript or JavaScript. Use `dud-cl-rut` in Python.
+
+The project exists because the legacy RUT packages still receive substantial use but no longer publish regular fixes. `rut.js` is the most-downloaded legacy package in this comparison. Its latest npm release is `2.1.0`, published on October 27, 2021. Its repository received two runtime fixes in April 2024 and dependency updates in November 2024, but those changes did not produce a new npm release. The repository still has open validation and formatting issues. The `rutjs` package is version `0.1.1`, published on July 21, 2013. Its `jeam/rut` repository has had no commits since July 2013 and still has an open validation issue.
+
+This project defines stricter behavior for cases reported in those packages:
+
+- It rejects the email example from [rut.js issue #15](https://github.com/jlobos/rut.js/issues/15), both directly and after `clean`, because the result fails strict format or body-length validation.
+- It rejects short progressive input such as `17353`. A RUT body must contain 7 or 8 digits. This behavior differs from the behavior reported in [rut.js issue #25](https://github.com/jlobos/rut.js/issues/25).
+- Its test suite includes 7-digit and 8-digit bodies. [rut.js issue #27](https://github.com/jlobos/rut.js/issues/27) reports an 8-digit formatting problem.
+- It rejects bodies with more than 8 digits. This behavior differs from the behavior reported in [rutjs issue #1](https://github.com/jeam/rut/issues/1).
+- It rejects malformed separators, prefixed text, Arabic-Indic digits, leading-zero bodies, and all-zero bodies.
+- It returns structured validation issues instead of a bare boolean.
+- It provides actionable Spanish and English messages.
+- It ships typed ESM for TypeScript and a typed, dependency-free Python package.
+
+**Installation**
+
+```bash
+npm install @dud-cl/rut
+pip install dud-cl-rut
+```
+
+**Accepted RUT input**
+
+The parser accepts these equivalent forms:
+
+```text
+21.272.789-K
+21272789-K
+21272789K
+21.272.789-k
+```
+
+The parser applies these rules:
+
+- Input must be a string.
+- The body must contain 7 or 8 ASCII digits.
+- The body cannot start with zero.
+- Dots must use valid thousands grouping when present.
+- The hyphen before the verifier is optional.
+- The verifier must match the modulo-11 result.
+- `K` is case-insensitive on input.
+- Successful parsing returns the canonical value `21272789K`.
+
+Use `clean` only for normalization. It removes unrelated characters and does not validate the result. Use `parse`, `safeParse`, or `is` when accepting user input.
+
+**TypeScript API**
+
+```text
+import * as rut from '@dud-cl/rut'
+
+type Language = 'es' | 'en'
+
+rut.parse(input: unknown, language?: Language): rut.Rut
+rut.safeParse(input: unknown, language?: Language): rut.SafeParseResult
+rut.is(input: unknown): boolean
+rut.format(value: rut.Rut, options?: { dots?: boolean; uppercase?: boolean }): string
+rut.clean(input: unknown): string
+rut.compare(left: unknown, right: unknown): boolean
+rut.getVerifier(body: unknown): string | null
+```
+
+`parse` validates and returns a branded canonical `Rut`. It throws `RutError` when validation fails.
+
+`safeParse` returns a discriminated result. It does not throw for invalid RUT input.
+
+```ts
+const result = rut.safeParse('21.272.789-0', 'en')
+
+// {
+//   success: false,
+//   issue: {
+//     kind: 'verifier',
+//     message: 'RUT verifier does not match. Replace "0" with "K".',
+//     input: '21.272.789-0',
+//     expected: 'K',
+//     received: '0',
+//   },
+// }
+```
+
+Issue kinds are `type`, `format`, `length`, and `verifier`. Spanish (`es`) is the default language. Pass `en` as the second argument to `parse` or `safeParse` for English messages.
+
+`format` accepts a parsed `Rut`. Dots and uppercase `K` are enabled by default.
+
+```ts
+const value = rut.parse('21.272.789-K')
+
+rut.format(value)                              // '21.272.789-K'
+rut.format(value, { dots: false })             // '21272789-K'
+rut.format(value, { uppercase: false })        // '21.272.789-k'
+rut.clean('0021.272.789-k')                    // '21272789K'
+rut.compare('21.272.789-K', '21272789K')       // true
+rut.getVerifier('21.272.789')                  // 'K'
+```
+
+**Python API**
+
+```text
+from dud_cl import rut
+
+rut.parse(input: object, language: rut.Language = "es") -> rut.Rut
+rut.safe_parse(input: object, language: rut.Language = "es") -> rut.SafeParseResult
+rut.is_rut(input: object) -> bool
+rut.format(value: rut.Rut, *, dots: bool = True, uppercase: bool = True) -> str
+rut.clean(input: object) -> str
+rut.compare(left: object, right: object) -> bool
+rut.get_verifier(body: object) -> str | None
+```
+
+`RutError` extends `ValueError`. Pydantic and other Python validators can handle it directly. Python uses `is_rut` because `is` is a reserved keyword.
+
+```python
+from dud_cl import rut
+
+value = rut.parse("21.272.789-K")
+
+rut.format(value)                    # "21.272.789-K"
+rut.format(value, dots=False)        # "21272789-K"
+rut.format(value, uppercase=False)   # "21.272.789-k"
+rut.clean("0021.272.789-k")          # "21272789K"
+rut.compare("21.272.789-K", "21272789K")
+rut.get_verifier("21.272.789")       # "K"
+```
+
+`safe_parse` returns the Python equivalent of the TypeScript discriminated result. It does not raise an exception for invalid RUT input.
+
+```python
+result = rut.safe_parse("21.272.789-0", "en")
+
+# SafeParseFailure(
+#     success=False,
+#     issue=VerifierIssue(
+#         kind="verifier",
+#         message='RUT verifier does not match. Replace "0" with "K".',
+#         input="21.272.789-0",
+#         expected="K",
+#         received="0",
+#     ),
+# )
+```
+
+**Recipe: Zod**
+
+Use a transform to return the branded canonical `Rut`. Forward the library message to Zod.
+
+```ts
+import { z } from 'zod'
+import { safeParse } from '@dud-cl/rut'
+
+const rutSchema = z.string().transform((input, context) => {
+  const result = safeParse(input, 'en')
+
+  if (!result.success) {
+    context.addIssue({
+      code: 'custom',
+      message: result.issue.message,
+    })
+    return z.NEVER
+  }
+
+  return result.output
+})
+
+const userSchema = z.object({
+  nationalId: rutSchema,
+})
+
+const result = userSchema.safeParse({
+  nationalId: '21.272.789-K',
+})
+
+if (result.success) {
+  result.data.nationalId // Branded Rut: '21272789K'
+}
+```
+
+**Recipe: Valibot**
+
+Validate the string first. Transform valid input to the branded canonical `Rut`.
+
+```ts
+import * as v from 'valibot'
+import * as rut from '@dud-cl/rut'
+
+const rutSchema = v.pipe(
+  v.string(),
+  v.check(rut.is, 'Enter a valid Chilean RUT.'),
+  v.transform((input) => rut.parse(input, 'en')),
+)
+
+const userSchema = v.object({
+  nationalId: rutSchema,
+})
+
+const result = v.safeParse(userSchema, {
+  nationalId: '21.272.789-K',
+})
+
+if (result.success) {
+  result.output.nationalId // Branded Rut: '21272789K'
+}
+```
+
+**Recipe: Pydantic**
+
+Use `AfterValidator` to store the canonical RUT in the model. Select English explicitly when the application uses English errors.
+
+```python
+from typing import Annotated
+
+from pydantic import AfterValidator, BaseModel
+
+from dud_cl import rut
+
+
+def parse_rut(value: str) -> str:
+    return rut.parse(value, "en")
+
+
+RutValue = Annotated[str, AfterValidator(parse_rut)]
+
+
+class User(BaseModel):
+    national_id: RutValue
+
+
+user = User(national_id="21.272.789-K")
+assert user.national_id == "21272789K"
+```
+
+**Recipe: React form**
+
+Validate on submit. Show the exact issue next to the field. Pass the canonical `Rut` to application code.
+
+```tsx
+import { useState, type FormEvent } from 'react'
+import {
+  format,
+  safeParse,
+  type Rut,
+} from '@dud-cl/rut'
+
+type RutFormProps = {
+  onValid: (value: Rut) => void
+}
+
+export function RutForm({ onValid }: RutFormProps) {
+  const [input, setInput] = useState('21.272.789-K')
+  const [error, setError] = useState<string | null>(null)
+
+  function submit(event: FormEvent<HTMLFormElement>) {
+    event.preventDefault()
+
+    const result = safeParse(input, 'en')
+
+    if (!result.success) {
+      setError(result.issue.message)
+      return
+    }
+
+    setError(null)
+    setInput(format(result.output))
+    onValid(result.output)
+  }
+
+  return (
+    <form onSubmit={submit} noValidate>
+      <label htmlFor="rut">Chilean RUT</label>
+      <input
+        id="rut"
+        name="rut"
+        value={input}
+        onChange={(event) => {
+          setInput(event.target.value)
+          setError(null)
+        }}
+        aria-invalid={error !== null}
+        aria-describedby={error ? 'rut-error' : undefined}
+      />
+      {error && <p id="rut-error" role="alert">{error}</p>}
+      <button type="submit">Continue</button>
+    </form>
+  )
+}
+```
+
+**Recipe: Vanilla JavaScript form**
+
+Use this example with an ESM-aware bundler such as Vite.
+
+```html
+<form id="rut-form" novalidate>
+  <label for="rut">Chilean RUT</label>
+  <input
+    id="rut"
+    name="rut"
+    value="21.272.789-K"
+    aria-describedby="rut-error rut-result"
+  >
+  <p id="rut-error" role="alert"></p>
+  <output id="rut-result" for="rut" hidden></output>
+  <button type="submit">Continue</button>
+</form>
+```
+
+```js
+import { format, safeParse } from '@dud-cl/rut'
+
+const form = document.querySelector('#rut-form')
+const input = document.querySelector('#rut')
+const error = document.querySelector('#rut-error')
+const output = document.querySelector('#rut-result')
+
+input.addEventListener('input', () => {
+  input.removeAttribute('aria-invalid')
+  error.textContent = ''
+  output.textContent = ''
+  output.hidden = true
+})
+
+form.addEventListener('submit', (event) => {
+  event.preventDefault()
+
+  const result = safeParse(input.value, 'en')
+
+  if (!result.success) {
+    input.setAttribute('aria-invalid', 'true')
+    error.textContent = result.issue.message
+    output.hidden = true
+    return
+  }
+
+  input.removeAttribute('aria-invalid')
+  input.value = format(result.output)
+  error.textContent = ''
+  output.textContent = `Canonical RUT: ${result.output}`
+  output.hidden = false
+})
+```
+
+**Recipe: Svelte form**
+
+Validate on submit. Keep the canonical RUT separate from the formatted field value.
+
+```svelte
+<script lang="ts">
+  import {
+    format,
+    safeParse,
+    type Rut,
+  } from '@dud-cl/rut'
+
+  let input = '21.272.789-K'
+  let error: string | null = null
+  let canonical: Rut | null = null
+
+  function submit() {
+    const result = safeParse(input, 'en')
+
+    if (!result.success) {
+      error = result.issue.message
+      canonical = null
+      return
+    }
+
+    error = null
+    canonical = result.output
+    input = format(result.output)
+  }
+
+  function edit() {
+    error = null
+    canonical = null
+  }
+</script>
+
+<form on:submit|preventDefault={submit} novalidate>
+  <label for="rut">Chilean RUT</label>
+  <input
+    id="rut"
+    name="rut"
+    bind:value={input}
+    aria-invalid={error !== null}
+    aria-describedby={error ? 'rut-error' : undefined}
+    on:input={edit}
+  />
+  {#if error}
+    <p id="rut-error" role="alert">{error}</p>
+  {/if}
+  {#if canonical}
+    <output for="rut">Canonical RUT: {canonical}</output>
+  {/if}
+  <button type="submit">Continue</button>
+</form>
+```
+
+## Documentation
+
+- [Project README](https://raw.githubusercontent.com/panquequelol/rut-cl/main/README.md): Installation, API summary, and TypeScript and Python examples.
+- [TypeScript README](https://raw.githubusercontent.com/panquequelol/rut-cl/main/packages/js/README.md): TypeScript package usage and API.
+- [Python README](https://raw.githubusercontent.com/panquequelol/rut-cl/main/packages/python/README.md): Python package usage and API.
+- [TypeScript source](https://github.com/panquequelol/rut-cl/tree/main/packages/js/src): Validation, formatting, issue types, and tests.
+- [Python source](https://github.com/panquequelol/rut-cl/tree/main/packages/python/src/dud_cl/rut): Python implementation and type definitions.
+
+## Packages
+
+- [npm: @dud-cl/rut](https://www.npmjs.com/package/@dud-cl/rut): Typed ESM package for TypeScript and JavaScript.
+- [PyPI: dud-cl-rut](https://pypi.org/project/dud-cl-rut/): Typed Python package imported as `dud_cl.rut`.
+- [GitHub repository](https://github.com/panquequelol/rut-cl): Source, issues, releases, and shared fixtures.
+
+## Maintenance context
+
+- [rut.js npm package](https://www.npmjs.com/package/rut.js): Latest npm release was published on October 27, 2021.
+- [jlobos/rut.js](https://github.com/jlobos/rut.js): Legacy repository with intermittent unreleased maintenance and open issues.
+- [rut.js issue #15](https://github.com/jlobos/rut.js/issues/15): Cleaning unrelated text can produce a value that passes validation.
+- [rut.js issue #25](https://github.com/jlobos/rut.js/issues/25): Short progressive input can pass validation.
+- [rut.js issue #27](https://github.com/jlobos/rut.js/issues/27): Open report about formatting an eight-digit RUT.
+- [rutjs npm package](https://www.npmjs.com/package/rutjs): Latest package version was published on July 21, 2013.
+- [jeam/rut](https://github.com/jeam/rut): CoffeeScript repository with no commits since July 2013.
+- [rutjs issue #1](https://github.com/jeam/rut/issues/1): A body with nine digits can pass validation.
+
+## Optional
+
+- [llms.txt specification](https://llmstxt.org/): Proposed format for LLM-friendly website documentation.
+- [License](https://raw.githubusercontent.com/panquequelol/rut-cl/main/LICENSE): MIT license.

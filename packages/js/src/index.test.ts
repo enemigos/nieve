@@ -139,6 +139,7 @@ describe('safeParse / parse / is', () => {
       success: false,
       issue: { kind: 'format' },
     })
+    expect(is(clean('chuma1996@gmail.com'))).toBe(false)
   })
 
   it.each([

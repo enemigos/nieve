@@ -4,6 +4,12 @@ Valida y da formato a valores RUT de Chile en TypeScript y Python.
 
 La API de TypeScript usa objetos de resultado similares a los de Valibot y Zod.
 
+## Motivaci&oacute;n
+
+[`rut.js`](https://github.com/jlobos/rut.js) es el paquete hist&oacute;rico con m&aacute;s descargas de esta comparaci&oacute;n, pero no publica una versi&oacute;n en npm desde octubre de 2021. Su repositorio recibi&oacute; correcciones sin publicar en 2024 y mantiene abiertos errores al [limpiar texto ajeno al RUT](https://github.com/jlobos/rut.js/issues/15), [validar entradas parciales](https://github.com/jlobos/rut.js/issues/25) y [dar formato](https://github.com/jlobos/rut.js/issues/27). [`rutjs`](https://github.com/jeam/rut) no recibe cambios desde julio de 2013 y [acepta cuerpos de 9 d&iacute;gitos](https://github.com/jeam/rut/issues/1).
+
+Este proyecto rechaza texto ajeno al RUT, entradas parciales como `17353` y cuerpos con m&aacute;s de 8 d&iacute;gitos. Tambi&eacute;n prueba cuerpos de 7 y 8 d&iacute;gitos, entrega errores tipados en espa&ntilde;ol o ingl&eacute;s y mantiene la misma API en TypeScript y Python. Consulta la [referencia para agentes](./llms.txt) para ver contratos y recetas completas.
+
 ## Instalar
 
 ```bash
@@ -79,7 +85,20 @@ rut.format(value, dots=False)        # "21272789-K"
 rut.format(value, uppercase=False)   # "21.272.789-k"
 
 rut.safe_parse("21.272.789-0")
-rut.safe_parse("21.272.789-0", "en")  # language="en"
+# SafeParseFailure(
+#     success=False,
+#     issue=VerifierIssue(
+#         kind="verifier",
+#         message='El verificador no coincide. Reemplaza "0" por "K".',
+#         input="21.272.789-0",
+#         expected="K",
+#         received="0",
+#     ),
+# )
+
+rut.safe_parse("21.272.789-0", "en")
+# issue.message: 'RUT verifier does not match. Replace "0" with "K".'
+
 rut.is_rut("21272789k")  # True (`is` es una palabra reservada de Python)
 
 rut.clean("0021.272.789-k")                # "21272789K"

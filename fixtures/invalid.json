@@ -11,6 +11,7 @@
   { "input": "00.000.000-0", "kind": "format" },
   { "input": "00000000-0", "kind": "format" },
   { "input": "0000000000000000000000-0", "kind": "format" },
+  { "input": "228298638-0", "kind": "length" },
   { "input": "1996", "kind": "length" },
   { "input": "17353", "kind": "length" },
   { "input": "1", "kind": "format" },

@@ -4,6 +4,10 @@ Valida y da formato a valores RUT de Chile en TypeScript.
 
 La API usa objetos de resultado similares a los de Valibot y Zod.
 
+## Motivaci&oacute;n
+
+[`rut.js`](https://github.com/jlobos/rut.js) no publica una versi&oacute;n en npm desde octubre de 2021 y mantiene errores abiertos de validaci&oacute;n y formato. [`rutjs`](https://github.com/jeam/rut) no recibe cambios desde julio de 2013. Este paquete rechaza texto ajeno al RUT, entradas parciales y cuerpos con una longitud incorrecta. Tambi&eacute;n entrega errores tipados en espa&ntilde;ol o ingl&eacute;s. Consulta la [referencia para agentes](https://github.com/panquequelol/rut-cl/blob/main/llms.txt) para ver contratos y recetas completas.
+
 ## Instalar
 
 ```bash
