@@ -3,52 +3,49 @@
     <img src="https://raw.githubusercontent.com/panquequelol/rut-cl/main/dud-logo.png" alt="dud.cl" width="88" align="left">
   </a>
   <br>
-  Este paquete es mantenido por <a href="https://dud.cl">dud.cl</a>, un estudio independiente de transformaci&oacute;n digital e inteligencia artificial para empresas y corporaciones.
+  This package is maintained by <a href="https://dud.cl">dud.cl</a>, an independent digital and AI transformation studio for enterprises and corporations.
 </p>
 <br clear="left">
 
 # @dud-cl/rut
 
-Valida y da formato a valores RUT de Chile en TypeScript.
+Validate and format Chilean RUT values in TypeScript.
 
-La API usa objetos de resultado similares a los de Valibot y Zod.
+The API uses result objects similar to Valibot and Zod.
 
-## Motivaci&oacute;n
+## Motivation
 
-[`rut.js`](https://github.com/jlobos/rut.js) no publica una versi&oacute;n en npm desde octubre de 2021 y mantiene errores abiertos de validaci&oacute;n y formato. [`rutjs`](https://github.com/jeam/rut) no recibe cambios desde julio de 2013. Este paquete rechaza texto ajeno al RUT, entradas parciales y cuerpos con una longitud incorrecta. Tambi&eacute;n entrega errores tipados en espa&ntilde;ol o ingl&eacute;s. Consulta la [referencia para agentes](https://github.com/panquequelol/rut-cl/blob/main/llms.txt) para ver contratos y recetas completas.
+[`rut.js`](https://github.com/jlobos/rut.js) has not published an npm release since October 2021 and still has open validation and formatting issues. [`rutjs`](https://github.com/jeam/rut) has not received updates since July 2013. This package rejects unrelated text, partial input, and bodies with invalid lengths. It also returns typed issues in Spanish or English. See the [agent reference](https://github.com/panquequelol/rut-cl/blob/main/llms.txt) for complete contracts and recipes.
 
-## Instalar
+## Install
 
 ```bash
 npm i @dud-cl/rut
 ```
 
-## Uso
+## Usage
 
 ```ts
 import * as rut from '@dud-cl/rut'
 
 const value = rut.parse('21.272.789-K')
-// RUT limpio con marca de tipo: '21272789K'
+// Branded canonical RUT: '21272789K'
 
 rut.format(value)                              // '21.272.789-K'
 rut.format(value, { dots: false })             // '21272789-K'
 rut.format(value, { uppercase: false })        // '21.272.789-k'
 
-rut.safeParse('21.272.789-0')
+rut.safeParse('21.272.789-0', 'en')
 // {
 //   success: false,
 //   issue: {
 //     kind: 'verifier',
-//     message: 'El verificador no coincide. Reemplaza "0" por "K".',
+//     message: 'RUT verifier does not match. Replace "0" with "K".',
 //     input: '21.272.789-0',
 //     expected: 'K',
 //     received: '0',
 //   },
 // }
-
-rut.safeParse('21.272.789-0', 'en')
-// issue.message: 'RUT verifier does not match. Replace "0" with "K".'
 
 rut.is('21272789k') // true
 
@@ -57,47 +54,47 @@ rut.getVerifier('21.272.789')               // 'K'
 rut.compare('21.272.789-K', '21272789K')    // true
 ```
 
-### Con Zod
+### With Zod
 
 ```ts
 import * as z from 'zod'
 import * as rut from '@dud-cl/rut'
 
 const schema = z.object({
-  nationalId: z.string().refine(rut.is, { message: 'RUT incorrecto' }),
+  nationalId: z.string().refine(rut.is, { message: 'Invalid RUT' }),
 })
 ```
 
-### Con Valibot
+### With Valibot
 
 ```ts
 import * as v from 'valibot'
 import * as rut from '@dud-cl/rut'
 
 const schema = v.object({
-  nationalId: v.pipe(v.string(), v.check(rut.is, 'RUT incorrecto')),
+  nationalId: v.pipe(v.string(), v.check(rut.is, 'Invalid RUT')),
 })
 ```
 
 ## API
 
-| API | Uso |
+| API | Purpose |
 |---|---|
-| `parse(input, language?)` | Valida la entrada. Devuelve el RUT limpio o lanza `RutError`. |
-| `safeParse(input, language?)` | Valida la entrada sin lanzar errores. Devuelve el resultado. |
-| `is(input)` | Indica si la entrada es correcta. |
-| `format(rut, options?)` | Da formato a un RUT validado. Usa `dots` y `uppercase` para definir la salida. |
-| `clean(input)` | Quita el formato sin validar. |
-| `compare(left, right)` | Compara dos RUT correctos. |
-| `getVerifier(body)` | Calcula el verificador de un cuerpo correcto. Devuelve `null` cuando el cuerpo es incorrecto. |
+| `parse(input, language?)` | Validate input. Return the canonical RUT or throw `RutError`. |
+| `safeParse(input, language?)` | Validate input without throwing. Return a structured result. |
+| `is(input)` | Return whether the input is valid. |
+| `format(rut, options?)` | Format a validated RUT. Use `dots` and `uppercase` to control the output. |
+| `clean(input)` | Normalize input without validating it. |
+| `compare(left, right)` | Compare two valid RUT values. |
+| `getVerifier(body)` | Calculate the verifier for a valid body. Return `null` for an invalid body. |
 
-Tras validar la entrada, `parse` devuelve la cadena limpia (`21272789K`).
+After validation, `parse` returns the canonical string (`21272789K`).
 
-Los errores usan espa&ntilde;ol (`es`) por defecto. Pasa `en` como segundo argumento de `parse` o `safeParse` para recibirlos en ingl&eacute;s.
+Errors use Spanish (`es`) by default. Pass `en` as the second argument to `parse` or `safeParse` for English messages.
 
-La cadena limpia tiene 8 o 9 caracteres: un cuerpo de 7 u 8 cifras y un verificador. Entrega a `format` un valor devuelto por `parse`.
+The canonical string contains 8 or 9 characters: a 7- or 8-digit body and its verifier. Pass a value returned by `parse` to `format`.
 
-## Desarrollo
+## Development
 
 ```bash
 pnpm install
@@ -105,6 +102,6 @@ pnpm test
 pnpm build
 ```
 
-## Licencia
+## License
 
 MIT

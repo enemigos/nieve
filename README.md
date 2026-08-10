@@ -3,21 +3,21 @@
     <img src="https://raw.githubusercontent.com/panquequelol/rut-cl/main/dud-logo.png" alt="dud.cl" width="88" align="left">
   </a>
   <br>
-  Este paquete es mantenido por <a href="https://dud.cl">dud.cl</a>, un estudio independiente de transformaci&oacute;n digital e inteligencia artificial para empresas y corporaciones.
+  Este paquete lo mantiene <a href="https://dud.cl">dud.cl</a>, un estudio independiente que trabaja con empresas en transformaci&oacute;n digital e inteligencia artificial.
 </p>
 <br clear="left">
 
 # RUT
 
-Valida y da formato a valores RUT de Chile en TypeScript y Python.
+Una librer&iacute;a para validar y formatear RUT chilenos en TypeScript y Python.
 
-La API de TypeScript usa objetos de resultado similares a los de Valibot y Zod.
+## Por qu&eacute; existe
 
-## Motivaci&oacute;n
+Necesit&aacute;bamos validar RUT en TypeScript y Python sin mantener dos implementaciones distintas. Las alternativas m&aacute;s usadas llevan a&ntilde;os sin publicar versiones y todav&iacute;a tienen bugs abiertos. Por eso hicimos una implementaci&oacute;n estricta y compartimos los mismos casos de prueba entre ambos lenguajes.
 
-[`rut.js`](https://github.com/jlobos/rut.js) es el paquete hist&oacute;rico con m&aacute;s descargas de esta comparaci&oacute;n, pero no publica una versi&oacute;n en npm desde octubre de 2021. Su repositorio recibi&oacute; correcciones sin publicar en 2024 y mantiene abiertos errores al [limpiar texto ajeno al RUT](https://github.com/jlobos/rut.js/issues/15), [validar entradas parciales](https://github.com/jlobos/rut.js/issues/25) y [dar formato](https://github.com/jlobos/rut.js/issues/27). [`rutjs`](https://github.com/jeam/rut) no recibe cambios desde julio de 2013 y [acepta cuerpos de 9 d&iacute;gitos](https://github.com/jeam/rut/issues/1).
+No intenta sacar un RUT de cualquier texto. Valida la entrada completa y rechaza cuerpos demasiado cortos o largos.
 
-Este proyecto rechaza texto ajeno al RUT, entradas parciales como `17353` y cuerpos con m&aacute;s de 8 d&iacute;gitos. Tambi&eacute;n prueba cuerpos de 7 y 8 d&iacute;gitos, entrega errores tipados en espa&ntilde;ol o ingl&eacute;s y mantiene la misma API en TypeScript y Python. Consulta la [referencia para agentes](./llms.txt) para ver contratos y recetas completas.
+Los contratos y recetas est&aacute;n en la [referencia para agentes](./llms.txt).
 
 ## Instalar
 
