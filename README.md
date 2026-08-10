@@ -1,3 +1,12 @@
+<p>
+  <a href="https://dud.cl">
+    <img src="https://raw.githubusercontent.com/panquequelol/rut-cl/main/dud-logo.png" alt="dud.cl" width="88" align="left">
+  </a>
+  <br>
+  Este paquete es mantenido por <a href="https://dud.cl">dud.cl</a>, un estudio independiente de transformaci&oacute;n digital e inteligencia artificial para empresas y corporaciones.
+</p>
+<br clear="left">
+
 # RUT
 
 Valida y da formato a valores RUT de Chile en TypeScript y Python.
