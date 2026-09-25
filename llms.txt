@@ -1,8 +1,8 @@
-# poder
+# nieve
 
 > Strict Chilean RUT parsing, validation, formatting, comparison, and verifier calculation for TypeScript and Python.
 
-This project provides matching core parsing, validation, formatting, comparison, and verifier APIs for TypeScript and Python. The package is called `poder` on both npm and PyPI. TypeScript additionally provides `formatPartial` for progressive browser input; it is intentionally not part of the Python package.
+This project provides matching core parsing, validation, formatting, comparison, and verifier APIs for TypeScript and Python. The package is called `nieve` on both npm and PyPI. TypeScript additionally provides `formatPartial` for progressive browser input; it is intentionally not part of the Python package.
 
 Both packages are released with the same version number, and CI fails when the two versions differ. `fixtures/conformance.json` holds 435 cases generated from the Python implementation; both test suites assert against it, so a behavior difference between the two packages fails CI.
 
@@ -22,8 +22,8 @@ This project defines stricter behavior for cases reported in those packages:
 **Installation**
 
 ```bash
-npm install poder
-pip install poder
+npm install nieve
+pip install nieve
 ```
 
 **Accepted RUT input**
@@ -72,7 +72,7 @@ Spanish (`es`) is the default language. Pass `en` as the second argument to `par
 **TypeScript API**
 
 ```text
-import * as rut from 'poder'
+import * as rut from 'nieve'
 
 type Language = 'es' | 'en'
 type RutStyle = 'dotted' | 'plain'
@@ -144,7 +144,7 @@ rut.formatPartial(189726317)           // { kind: 'unsupported', value: '' }
 **Python API**
 
 ```text
-import poder as rut
+import nieve as rut
 
 rut.parse(input: object, language: rut.Language = "es") -> rut.Rut
 rut.safe_parse(input: object, language: rut.Language = "es") -> rut.SafeParseResult
@@ -160,7 +160,7 @@ Exported names: `Rut`, `Language`, `RutError`, `RutIssue`, `RutIssueKind`, `Type
 `RutError` extends `ValueError`. Pydantic and other Python validators can handle it directly. Python uses `is_rut` because `is` is a reserved keyword. The issue dataclasses are importable, so code can narrow with `isinstance` instead of comparing strings.
 
 ```python
-import poder as rut
+import nieve as rut
 
 value = rut.parse("21.272.789-K")
 
@@ -197,7 +197,7 @@ Use a transform to return the branded canonical `Rut`. Forward the library messa
 
 ```ts
 import { z } from 'zod'
-import { safeParse, type RutIssue } from 'poder'
+import { safeParse, type RutIssue } from 'nieve'
 
 const rutSchema = z.unknown().transform((input, context) => {
   const result = safeParse(input, 'en')
@@ -242,7 +242,7 @@ Validate the string first. Transform valid input to the branded canonical `Rut`.
 
 ```ts
 import * as v from 'valibot'
-import * as rut from 'poder'
+import * as rut from 'nieve'
 
 const rutSchema = v.pipe(
   v.string(),
@@ -272,7 +272,7 @@ from typing import Annotated
 
 from pydantic import AfterValidator, BaseModel
 
-import poder as rut
+import nieve as rut
 
 
 def parse_rut(value: str) -> str:
@@ -303,7 +303,7 @@ import {
   safeParse,
   type Rut,
   type SafeParseResult,
-} from 'poder'
+} from 'nieve'
 
 type RutFormProps = {
   onValid: (value: Rut) => void
@@ -372,7 +372,7 @@ Use this example with an ESM-aware bundler such as Vite.
 ```
 
 ```js
-import { format, safeParse } from 'poder'
+import { format, safeParse } from 'nieve'
 
 const form = document.querySelector('#rut-form')
 const input = document.querySelector('#rut')
@@ -416,7 +416,7 @@ Validate on submit. Keep the canonical RUT separate from the formatted field val
     format,
     safeParse,
     type Rut,
-  } from 'poder'
+  } from 'nieve'
 
   let input = '21.272.789-K'
   let error: string | null = null
@@ -464,19 +464,19 @@ Validate on submit. Keep the canonical RUT separate from the formatted field val
 
 ## Documentation
 
-- [Project README](https://raw.githubusercontent.com/enemigos/poder/main/README.md): Installation, API summary, and TypeScript and Python examples.
-- [Changelog](https://raw.githubusercontent.com/enemigos/poder/main/CHANGELOG.md): Shared changelog for both packages, including breaking changes.
-- [TypeScript README](https://raw.githubusercontent.com/enemigos/poder/main/packages/js/README.md): TypeScript package usage and API.
-- [Python README](https://raw.githubusercontent.com/enemigos/poder/main/packages/python/README.md): Python package usage and API.
-- [TypeScript source](https://github.com/enemigos/poder/tree/main/packages/js/src): Validation, formatting, issue types, and tests.
-- [Python source](https://github.com/enemigos/poder/tree/main/packages/python/src/poder): Python implementation and type definitions.
-- [Shared fixtures](https://github.com/enemigos/poder/tree/main/fixtures): Cases both test suites assert against, including the generated conformance suite.
+- [Project README](https://raw.githubusercontent.com/enemigos/nieve/main/README.md): Installation, API summary, and TypeScript and Python examples.
+- [Changelog](https://raw.githubusercontent.com/enemigos/nieve/main/CHANGELOG.md): Shared changelog for both packages, including breaking changes.
+- [TypeScript README](https://raw.githubusercontent.com/enemigos/nieve/main/packages/js/README.md): TypeScript package usage and API.
+- [Python README](https://raw.githubusercontent.com/enemigos/nieve/main/packages/python/README.md): Python package usage and API.
+- [TypeScript source](https://github.com/enemigos/nieve/tree/main/packages/js/src): Validation, formatting, issue types, and tests.
+- [Python source](https://github.com/enemigos/nieve/tree/main/packages/python/src/nieve): Python implementation and type definitions.
+- [Shared fixtures](https://github.com/enemigos/nieve/tree/main/fixtures): Cases both test suites assert against, including the generated conformance suite.
 
 ## Packages
 
-- [npm: poder](https://www.npmjs.com/package/poder): Typed ESM package for TypeScript and JavaScript.
-- [PyPI: poder](https://pypi.org/project/poder/): Typed Python package imported as `poder`.
-- [GitHub repository](https://github.com/enemigos/poder): Source, issues, releases, and shared fixtures.
+- [npm: nieve](https://www.npmjs.com/package/nieve): Typed ESM package for TypeScript and JavaScript.
+- [PyPI: nieve](https://pypi.org/project/nieve/): Typed Python package imported as `nieve`.
+- [GitHub repository](https://github.com/enemigos/nieve): Source, issues, releases, and shared fixtures.
 
 ## Maintenance context
 
@@ -492,4 +492,4 @@ Validate on submit. Keep the canonical RUT separate from the formatted field val
 ## Optional
 
 - [llms.txt specification](https://llmstxt.org/): Proposed format for LLM-friendly website documentation.
-- [License](https://raw.githubusercontent.com/enemigos/poder/main/LICENSE): MIT license.
+- [License](https://raw.githubusercontent.com/enemigos/nieve/main/LICENSE): MIT license.

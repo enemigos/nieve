@@ -36,7 +36,7 @@ def main() -> int:
     if js_version != python_version:
         print(
             "version mismatch: "
-            f"poder (npm) is {js_version}, poder (PyPI) is {python_version}. "
+            f"nieve (npm) is {js_version}, nieve (PyPI) is {python_version}. "
             "Release both packages with the same version.",
             file=sys.stderr,
         )

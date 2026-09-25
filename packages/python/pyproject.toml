@@ -3,7 +3,7 @@ requires = ["hatchling"]
 build-backend = "hatchling.build"
 
 [project]
-name = "poder"
+name = "nieve"
 version = "1.0.0"
 description = "Lean Chilean RUT validation and formatting for Python"
 readme = "README.md"
@@ -25,18 +25,18 @@ classifiers = [
 dependencies = []
 
 [project.urls]
-Homepage = "https://github.com/enemigos/poder"
-Repository = "https://github.com/enemigos/poder"
-Issues = "https://github.com/enemigos/poder/issues"
+Homepage = "https://github.com/enemigos/nieve"
+Repository = "https://github.com/enemigos/nieve"
+Issues = "https://github.com/enemigos/nieve/issues"
 
 [project.optional-dependencies]
 dev = ["pytest>=8.0", "mypy>=1.14", "ruff>=0.9"]
 
 [tool.hatch.build.targets.sdist]
-include = ["src/poder", "README.md", "LICENSE"]
+include = ["src/nieve", "README.md", "LICENSE"]
 
 [tool.hatch.build.targets.wheel]
-packages = ["src/poder"]
+packages = ["src/nieve"]
 
 [tool.pytest.ini_options]
 testpaths = ["tests"]
@@ -61,4 +61,4 @@ exclude = ["*.md"]
 python_version = "3.10"
 strict = true
 mypy_path = "src"
-packages = ["poder", "tests"]
+packages = ["nieve", "tests"]

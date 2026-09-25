@@ -1,5 +1,5 @@
 {
-  "name": "poder",
+  "name": "nieve",
   "version": "1.0.0",
   "description": "Lean Chilean RUT validation and formatting for TypeScript",
   "license": "MIT",
@@ -37,13 +37,13 @@
   ],
   "repository": {
     "type": "git",
-    "url": "git+https://github.com/enemigos/poder.git",
+    "url": "git+https://github.com/enemigos/nieve.git",
     "directory": "packages/js"
   },
   "bugs": {
-    "url": "https://github.com/enemigos/poder/issues"
+    "url": "https://github.com/enemigos/nieve/issues"
   },
-  "homepage": "https://github.com/enemigos/poder#readme",
+  "homepage": "https://github.com/enemigos/nieve#readme",
   "engines": {
     "node": ">=20"
   },

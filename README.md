@@ -1,4 +1,4 @@
-# poder
+# nieve
 
 Una librer&iacute;a para validar y formatear RUT chilenos en TypeScript y Python.
 
@@ -13,8 +13,8 @@ Los contratos y recetas est&aacute;n en la [referencia para LLMs](./llms.txt). L
 ## Instalar
 
 ```bash
-npm i poder
-pip install poder
+npm i nieve
+pip install nieve
 ```
 
 ## TypeScript
@@ -22,7 +22,7 @@ pip install poder
 Los ejemplos importan el paquete con el alias `rut` para que cada llamada se lea sola.
 
 ```ts
-import * as rut from 'poder'
+import * as rut from 'nieve'
 
 const value = rut.parse('21.272.789-K')
 // RUT limpio con marca de tipo: '21272789K'
@@ -67,7 +67,7 @@ rut.format(stored) // '21.272.789-K'
 
 ```ts
 import * as z from 'zod'
-import * as rut from 'poder'
+import * as rut from 'nieve'
 
 const rutSchema = z.unknown().transform((input, context) => {
   const result = rut.safeParse(input)
@@ -99,7 +99,7 @@ El mensaje de Zod conserva `RutIssue.message`, el dato correcto queda como `Rut`
 
 ```tsx
 import { useState } from 'react'
-import * as rut from 'poder'
+import * as rut from 'nieve'
 
 const [input, setInput] = useState('')
 const [validation, setValidation] = useState<rut.SafeParseResult | null>(null)
@@ -123,7 +123,7 @@ const issue = validation?.success === false ? validation.issue : null
 
 ```ts
 import * as v from 'valibot'
-import * as rut from 'poder'
+import * as rut from 'nieve'
 
 const schema = v.object({
   nationalId: v.pipe(v.string(), v.check(rut.is, 'RUT incorrecto')),
@@ -135,7 +135,7 @@ const schema = v.object({
 Los ejemplos importan el paquete con el alias `rut` para que cada llamada se lea sola.
 
 ```python
-import poder as rut
+import nieve as rut
 
 value = rut.parse("21.272.789-K")  # "21272789K"
 
@@ -170,7 +170,7 @@ rut.compare("21.272.789-K", "21272789K")   # True
 ```python
 from typing import Annotated
 from pydantic import AfterValidator, BaseModel
-from poder import parse
+from nieve import parse
 
 class User(BaseModel):
     national_id: Annotated[str, AfterValidator(parse)]

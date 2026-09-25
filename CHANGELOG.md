@@ -1,6 +1,6 @@
 # Changelog
 
-`poder` ships to npm and PyPI from this repository. Both packages share this
+`nieve` ships to npm and PyPI from this repository. Both packages share this
 changelog and are released with the same version number. CI fails when the two
 versions differ.
 

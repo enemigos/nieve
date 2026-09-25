@@ -1,4 +1,4 @@
-# poder
+# nieve
 
 Validate and format Chilean RUT values in TypeScript.
 
@@ -8,12 +8,12 @@ The API uses result objects similar to Valibot and Zod.
 
 [`rut.js`](https://github.com/jlobos/rut.js) has not published an npm release since October 2021 and still has open validation and formatting issues. [`rutjs`](https://github.com/jeam/rut) has not received updates since July 2013. This package rejects unrelated text, partial input, inconsistent separators, and bodies with invalid lengths. It returns typed issues in Spanish or English.
 
-The same behavior ships as [`poder`](https://pypi.org/project/poder/) for Python. Both packages share one set of fixtures, including a generated conformance suite that fails CI when the two implementations disagree, and both are released with the same version number. See the [agent reference](https://github.com/enemigos/poder/blob/main/llms.txt) for complete contracts and recipes.
+The same behavior ships as [`nieve`](https://pypi.org/project/nieve/) for Python. Both packages share one set of fixtures, including a generated conformance suite that fails CI when the two implementations disagree, and both are released with the same version number. See the [agent reference](https://github.com/enemigos/nieve/blob/main/llms.txt) for complete contracts and recipes.
 
 ## Install
 
 ```bash
-npm i poder
+npm i nieve
 ```
 
 ## Usage
@@ -21,7 +21,7 @@ npm i poder
 Examples import the package as `rut` so each call reads on its own.
 
 ```ts
-import * as rut from 'poder'
+import * as rut from 'nieve'
 
 const value = rut.parse('21.272.789-K')
 // Branded canonical RUT: '21272789K'
@@ -93,7 +93,7 @@ rut.format(stored) // '21.272.789-K'
 
 ```ts
 import * as z from 'zod'
-import * as rut from 'poder'
+import * as rut from 'nieve'
 
 const rutSchema = z.unknown().transform((input, context) => {
   const result = rut.safeParse(input, 'en')
@@ -125,7 +125,7 @@ Zod receives `RutIssue.message`, successful data becomes a branded `Rut`, and th
 
 ```tsx
 import { useState } from 'react'
-import * as rut from 'poder'
+import * as rut from 'nieve'
 
 const [input, setInput] = useState('')
 const [validation, setValidation] = useState<rut.SafeParseResult | null>(null)
@@ -149,7 +149,7 @@ const issue = validation?.success === false ? validation.issue : null
 
 ```ts
 import * as v from 'valibot'
-import * as rut from 'poder'
+import * as rut from 'nieve'
 
 const schema = v.object({
   nationalId: v.pipe(v.string(), v.check(rut.is, 'Invalid RUT')),

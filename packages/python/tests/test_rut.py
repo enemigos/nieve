@@ -4,7 +4,7 @@ from typing import Any
 
 import pytest
 
-import poder as rut
+import nieve as rut
 
 from .fixtures import (
     CLEANED,
