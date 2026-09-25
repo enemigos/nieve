@@ -17,6 +17,8 @@ npm i poder
 pip install poder
 ```
 
+`poder` reemplaza a `@dud-cl/rut` en npm y a `dud-cl-rut` en PyPI. Esos paquetes quedaron obsoletos y no reciben m&aacute;s versiones. La [gu&iacute;a de migraci&oacute;n](./CHANGELOG.md) est&aacute; en el changelog.
+
 ## TypeScript
 
 Los ejemplos importan el paquete con el alias `rut` para que cada llamada se lea sola.
