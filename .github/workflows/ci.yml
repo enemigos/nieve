@@ -7,7 +7,32 @@ on:
 
 jobs:
   js:
-    name: js (node ${{ matrix.node }})
+    name: js
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: pnpm/action-setup@v4
+
+      - uses: actions/setup-node@v4
+        with:
+          node-version: 22
+          cache: pnpm
+
+      - run: pnpm install --frozen-lockfile
+      - run: pnpm typecheck
+      - run: pnpm test
+      - run: pnpm build
+      - run: pnpm lint:package
+
+      - uses: actions/upload-artifact@v4
+        with:
+          name: dist
+          path: packages/js/dist
+
+  runtime:
+    name: runtime (node ${{ matrix.node }})
+    needs: js
     runs-on: ubuntu-latest
     strategy:
       fail-fast: false
@@ -16,18 +41,18 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - uses: pnpm/action-setup@v4
-
       - uses: actions/setup-node@v4
         with:
           node-version: ${{ matrix.node }}
-          cache: pnpm
 
-      - run: pnpm install --frozen-lockfile
-      - run: pnpm typecheck
-      - run: pnpm test
-      - run: pnpm build
-      - run: pnpm lint:package
+      - uses: actions/download-artifact@v4
+        with:
+          name: dist
+          path: packages/js/dist
+
+      # The pinned pnpm needs a newer Node than the package does, so the lowest
+      # supported version is verified by importing the build with plain node.
+      - run: node scripts/smoke.mjs
 
   python:
     name: python (${{ matrix.python }})
