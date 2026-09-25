@@ -36,7 +36,7 @@ def main() -> int:
     if js_version != python_version:
         print(
             "version mismatch: "
-            f"@dud-cl/rut is {js_version}, dud-cl-rut is {python_version}. "
+            f"poder (npm) is {js_version}, poder (PyPI) is {python_version}. "
             "Release both packages with the same version.",
             file=sys.stderr,
         )

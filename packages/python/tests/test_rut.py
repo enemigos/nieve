@@ -4,7 +4,7 @@ from typing import Any
 
 import pytest
 
-from dud_cl import rut
+import poder as rut
 
 from .fixtures import (
     CLEANED,

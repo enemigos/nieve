@@ -1,32 +1,25 @@
-<p>
-  <a href="https://dud.cl">
-    <img src="https://raw.githubusercontent.com/panquequelol/rut-cl/main/dud-logo.png" alt="dud.cl" width="88" align="left">
-  </a>
-  <br>
-  This package is maintained by <a href="https://dud.cl">dud.cl</a>, an independent digital and AI transformation studio for enterprises and corporations.
-</p>
-<br clear="left">
-
-# dud-cl-rut
+# poder
 
 Validate and format Chilean RUT values in Python.
 
-The core API matches [`@dud-cl/rut`](https://www.npmjs.com/package/@dud-cl/rut) for TypeScript and uses `snake_case` names. Both packages share one set of fixtures, including a generated conformance suite that fails CI when the two implementations disagree, and both are released with the same version number. The TypeScript-only `formatPartial` helper is for progressive browser input and is intentionally omitted here.
+The core API matches [`poder`](https://www.npmjs.com/package/poder) for TypeScript and uses `snake_case` names. Both packages share one set of fixtures, including a generated conformance suite that fails CI when the two implementations disagree, and both are released with the same version number. The TypeScript-only `formatPartial` helper is for progressive browser input and is intentionally omitted here.
 
 ## Motivation
 
-The last releases of the legacy JavaScript libraries [`rut.js`](https://github.com/jlobos/rut.js) and [`rutjs`](https://github.com/jeam/rut) were published in 2021 and 2013, respectively, and they still have open issues. This package brings strict validation and structured issues to Python. See the [agent reference](https://github.com/panquequelol/rut-cl/blob/main/llms.txt) for complete contracts and recipes.
+The last releases of the legacy JavaScript libraries [`rut.js`](https://github.com/jlobos/rut.js) and [`rutjs`](https://github.com/jeam/rut) were published in 2021 and 2013, respectively, and they still have open issues. This package brings strict validation and structured issues to Python. See the [agent reference](https://github.com/enemigos/poder/blob/main/llms.txt) for complete contracts and recipes.
 
 ## Install
 
 ```bash
-pip install dud-cl-rut
+pip install poder
 ```
 
 ## Usage
 
+Examples import the package as `rut` so each call reads on its own.
+
 ```python
-from dud_cl import rut
+import poder as rut
 
 value = rut.parse("21.272.789-K")
 # "21272789K"
@@ -87,7 +80,7 @@ The 7-digit floor is deliberate: it rejects modulo-11 false positives in short i
 Narrow on the concrete dataclass or on `kind`:
 
 ```python
-from dud_cl.rut import VerifierIssue, safe_parse
+from poder import VerifierIssue, safe_parse
 
 result = safe_parse("21.272.789-0")
 
@@ -112,7 +105,7 @@ rut.format(stored)  # "21.272.789-K"
 ```python
 from typing import Annotated
 from pydantic import AfterValidator, BaseModel
-from dud_cl.rut import parse
+from poder import parse
 
 class User(BaseModel):
     national_id: Annotated[str, AfterValidator(parse)]

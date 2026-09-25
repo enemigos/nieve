@@ -1,12 +1,24 @@
 # Changelog
 
-`@dud-cl/rut` (npm) and `dud-cl-rut` (PyPI) share this changelog and are
-released with the same version number. CI fails when the two versions differ.
+`poder` ships to npm and PyPI from this repository. Both packages share this
+changelog and are released with the same version number. CI fails when the two
+versions differ.
 
-## 0.4.0
+## 1.0.0
 
-First release where both packages are versioned in lockstep. The previous
-releases were `@dud-cl/rut@0.3.0` and `dud-cl-rut@0.2.0`.
+First release under the name `poder`, on npm and PyPI.
+
+It continues the packages previously published as `@dud-cl/rut` (npm, last
+release 0.3.0) and `dud-cl-rut` (PyPI, last release 0.2.0). Both are deprecated
+and will receive no further releases.
+
+### Migrating
+
+- Install `poder` and remove `@dud-cl/rut` or `dud-cl-rut`.
+- TypeScript: change the import specifier. `import * as rut from 'poder'`.
+- Python: the module is `poder`, not `dud_cl.rut`. `import poder as rut` keeps
+  existing call sites working, or import names directly from `poder`.
+- Then apply the behavior changes below.
 
 ### Breaking
 
@@ -41,16 +53,18 @@ releases were `@dud-cl/rut@0.3.0` and `dud-cl-rut@0.2.0`.
 - TypeScript exports `RutIssueKind`, `TypeIssue`, `FormatIssue`, `LengthIssue`,
   `VerifierIssue`, `SafeParseSuccess`, `SafeParseFailure`, `PartialFormat`,
   `RutStyle`, and `VerifierCase`.
-- Python exports the same set through `dud_cl.rut`: `RutIssueKind`, the four
-  issue dataclasses, `SafeParseSuccess`, `SafeParseFailure`, `Style`, and
-  `VerifierCase`. Previously only the `RutIssue` union was importable even
-  though `safe_parse` returned the concrete classes.
+- Python exports the same set: `RutIssueKind`, the four issue dataclasses,
+  `SafeParseSuccess`, `SafeParseFailure`, `Style`, and `VerifierCase`.
+  Previously only the `RutIssue` union was importable even though `safe_parse`
+  returned the concrete classes.
 - `fixtures/conformance.json` holds 435 cases generated from the Python
   package. Both test suites assert against it, so a behavior difference between
   the two implementations fails CI.
 - Localized messages, `compare`, `format` options, and `getVerifier` results
   moved into shared fixtures. They used to be duplicated by hand in each suite,
   which is where message drift would have gone unnoticed.
-- Ruff lint and format checks for the Python package.
-- CI runs Node 20, 22, and 24 and Python 3.10 through 3.13, matching what the
-  package metadata claims to support.
+- Ruff lint and format checks for the Python package and the maintenance
+  scripts.
+- CI runs Python 3.10 through 3.13, and imports the built package with plain
+  `node` on 20, 22, and 24 to check the supported runtimes against the artifact
+  a consumer installs.

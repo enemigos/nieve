@@ -1,13 +1,4 @@
-<p>
-  <a href="https://dud.cl">
-    <img src="https://raw.githubusercontent.com/panquequelol/rut-cl/main/dud-logo.png" alt="dud.cl" width="88" align="left">
-  </a>
-  <br>
-  Este paquete lo mantiene <a href="https://dud.cl">dud.cl</a>, un estudio independiente que trabaja con empresas en transformaci&oacute;n digital e inteligencia artificial.
-</p>
-<br clear="left">
-
-# RUT
+# poder
 
 Una librer&iacute;a para validar y formatear RUT chilenos en TypeScript y Python.
 
@@ -17,19 +8,21 @@ Necesit&aacute;bamos validar RUT en TypeScript y Python sin mantener dos impleme
 
 Las dos implementaciones se comparan entre s&iacute;: `fixtures/conformance.json` tiene 435 casos generados desde el paquete Python y las dos suites los verifican, as&iacute; que cualquier diferencia de comportamiento rompe CI. Ambos paquetes se publican con la misma versi&oacute;n.
 
-Los contratos y recetas est&aacute;n en la [referencia para LLMs](./llms.txt). La [referencia para humanos](https://dud.cl/rut/) est&aacute; en dud.cl. Los cambios entre versiones est&aacute;n en el [changelog](./CHANGELOG.md).
+Los contratos y recetas est&aacute;n en la [referencia para LLMs](./llms.txt). Los cambios entre versiones est&aacute;n en el [changelog](./CHANGELOG.md).
 
 ## Instalar
 
 ```bash
-npm i @dud-cl/rut
-pip install dud-cl-rut
+npm i poder
+pip install poder
 ```
 
 ## TypeScript
 
+Los ejemplos importan el paquete con el alias `rut` para que cada llamada se lea sola.
+
 ```ts
-import * as rut from '@dud-cl/rut'
+import * as rut from 'poder'
 
 const value = rut.parse('21.272.789-K')
 // RUT limpio con marca de tipo: '21272789K'
@@ -74,7 +67,7 @@ rut.format(stored) // '21.272.789-K'
 
 ```ts
 import * as z from 'zod'
-import * as rut from '@dud-cl/rut'
+import * as rut from 'poder'
 
 const rutSchema = z.unknown().transform((input, context) => {
   const result = rut.safeParse(input)
@@ -106,7 +99,7 @@ El mensaje de Zod conserva `RutIssue.message`, el dato correcto queda como `Rut`
 
 ```tsx
 import { useState } from 'react'
-import * as rut from '@dud-cl/rut'
+import * as rut from 'poder'
 
 const [input, setInput] = useState('')
 const [validation, setValidation] = useState<rut.SafeParseResult | null>(null)
@@ -130,7 +123,7 @@ const issue = validation?.success === false ? validation.issue : null
 
 ```ts
 import * as v from 'valibot'
-import * as rut from '@dud-cl/rut'
+import * as rut from 'poder'
 
 const schema = v.object({
   nationalId: v.pipe(v.string(), v.check(rut.is, 'RUT incorrecto')),
@@ -139,8 +132,10 @@ const schema = v.object({
 
 ## Python
 
+Los ejemplos importan el paquete con el alias `rut` para que cada llamada se lea sola.
+
 ```python
-from dud_cl import rut
+import poder as rut
 
 value = rut.parse("21.272.789-K")  # "21272789K"
 
@@ -175,7 +170,7 @@ rut.compare("21.272.789-K", "21272789K")   # True
 ```python
 from typing import Annotated
 from pydantic import AfterValidator, BaseModel
-from dud_cl.rut import parse
+from poder import parse
 
 class User(BaseModel):
     national_id: Annotated[str, AfterValidator(parse)]

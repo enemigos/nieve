@@ -3,10 +3,10 @@
   "private": true,
   "type": "module",
   "scripts": {
-    "build": "pnpm --filter @dud-cl/rut build",
-    "test": "pnpm --filter @dud-cl/rut test",
-    "typecheck": "pnpm --filter @dud-cl/rut typecheck",
-    "lint:package": "pnpm --filter @dud-cl/rut lint:package",
+    "build": "pnpm --filter poder build",
+    "test": "pnpm --filter poder test",
+    "typecheck": "pnpm --filter poder typecheck",
+    "lint:package": "pnpm --filter poder lint:package",
     "check:versions": "python3 scripts/check_versions.py",
     "fixtures:conformance": "uv run --project packages/python python scripts/generate_conformance.py"
   },

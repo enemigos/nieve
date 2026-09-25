@@ -19,7 +19,7 @@ from typing import Any
 ROOT = Path(__file__).resolve().parents[1]
 sys.path.insert(0, str(ROOT / "packages" / "python" / "src"))
 
-from dud_cl import rut  # noqa: E402
+import poder as rut  # noqa: E402
 
 FIXTURE = ROOT / "fixtures" / "conformance.json"
 
