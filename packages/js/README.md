@@ -16,8 +16,6 @@ The same behavior ships as [`poder`](https://pypi.org/project/poder/) for Python
 npm i poder
 ```
 
-`poder` replaces `@dud-cl/rut`, which is deprecated and receives no further releases. The [changelog](https://github.com/enemigos/poder/blob/main/CHANGELOG.md) has the migration notes.
-
 ## Usage
 
 Examples import the package as `rut` so each call reads on its own.

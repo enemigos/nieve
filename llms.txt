@@ -6,8 +6,6 @@ This project provides matching core parsing, validation, formatting, comparison,
 
 Both packages are released with the same version number, and CI fails when the two versions differ. `fixtures/conformance.json` holds 435 cases generated from the Python implementation; both test suites assert against it, so a behavior difference between the two packages fails CI.
 
-Version 1.0.0 is the first release under this name. It continues the packages previously published as `@dud-cl/rut` on npm and `dud-cl-rut` on PyPI, which are deprecated and receive no further releases.
-
 The project exists because the legacy RUT packages still receive substantial use but no longer publish regular fixes. `rut.js` is the most-downloaded legacy package in this comparison. Its latest npm release is `2.1.0`, published on October 27, 2021. Its repository received two runtime fixes in April 2024 and dependency updates in November 2024, but those changes did not produce a new npm release. The repository still has open validation and formatting issues. The `rutjs` package is version `0.1.1`, published on July 21, 2013. Its `jeam/rut` repository has had no commits since July 2013 and still has an open validation issue.
 
 This project defines stricter behavior for cases reported in those packages:
@@ -479,8 +477,6 @@ Validate on submit. Keep the canonical RUT separate from the formatted field val
 - [npm: poder](https://www.npmjs.com/package/poder): Typed ESM package for TypeScript and JavaScript.
 - [PyPI: poder](https://pypi.org/project/poder/): Typed Python package imported as `poder`.
 - [GitHub repository](https://github.com/enemigos/poder): Source, issues, releases, and shared fixtures.
-- [npm: @dud-cl/rut](https://www.npmjs.com/package/@dud-cl/rut): Deprecated predecessor. Use `poder`.
-- [PyPI: dud-cl-rut](https://pypi.org/project/dud-cl-rut/): Deprecated predecessor. Use `poder`.
 
 ## Maintenance context
 

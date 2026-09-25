@@ -14,8 +14,6 @@ The last releases of the legacy JavaScript libraries [`rut.js`](https://github.c
 pip install poder
 ```
 
-`poder` replaces `dud-cl-rut`, which is deprecated and receives no further releases. The module is `poder`, not `dud_cl.rut`. The [changelog](https://github.com/enemigos/poder/blob/main/CHANGELOG.md) has the migration notes.
-
 ## Usage
 
 Examples import the package as `rut` so each call reads on its own.
