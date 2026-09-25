@@ -1,0 +1,50 @@
+[
+  {
+    "input": 189726317,
+    "kind": "type",
+    "es": "El RUT debe ser una cadena de texto. Usa un valor como \"21.272.789-K\" e intenta de nuevo.",
+    "en": "RUT must be a string. Use a value such as \"21.272.789-K\", then try again."
+  },
+  {
+    "input": null,
+    "kind": "type",
+    "es": "El RUT debe ser una cadena de texto. Usa un valor como \"21.272.789-K\" e intenta de nuevo.",
+    "en": "RUT must be a string. Use a value such as \"21.272.789-K\", then try again."
+  },
+  {
+    "input": "abc",
+    "kind": "format",
+    "es": "El formato del RUT es incorrecto. Usa 7 u 8 d\u00edgitos y un verificador, por ejemplo, \"21.272.789-K\".",
+    "en": "RUT format is incorrect. Use 7 or 8 digits and a verifier, for example, \"21.272.789-K\"."
+  },
+  {
+    "input": "21.272789-K",
+    "kind": "format",
+    "es": "El formato del RUT es incorrecto. Usa 7 u 8 d\u00edgitos y un verificador, por ejemplo, \"21.272.789-K\".",
+    "en": "RUT format is incorrect. Use 7 or 8 digits and a verifier, for example, \"21.272.789-K\"."
+  },
+  {
+    "input": "1-9",
+    "kind": "length",
+    "es": "El cuerpo del RUT debe tener 7 u 8 d\u00edgitos antes del verificador; tiene 1. Corrige el cuerpo e intenta de nuevo.",
+    "en": "RUT body must contain 7 or 8 digits before the verifier; it contains 1. Correct the body, then try again."
+  },
+  {
+    "input": "123.456.789-0",
+    "kind": "length",
+    "es": "El cuerpo del RUT debe tener 7 u 8 d\u00edgitos antes del verificador; tiene 9. Corrige el cuerpo e intenta de nuevo.",
+    "en": "RUT body must contain 7 or 8 digits before the verifier; it contains 9. Correct the body, then try again."
+  },
+  {
+    "input": "21.272.789-0",
+    "kind": "verifier",
+    "es": "El verificador no coincide. Reemplaza \"0\" por \"K\".",
+    "en": "RUT verifier does not match. Replace \"0\" with \"K\"."
+  },
+  {
+    "input": "18.972.631-K",
+    "kind": "verifier",
+    "es": "El verificador no coincide. Reemplaza \"K\" por \"7\".",
+    "en": "RUT verifier does not match. Replace \"K\" with \"7\"."
+  }
+]

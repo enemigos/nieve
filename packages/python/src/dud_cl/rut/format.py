@@ -1,25 +1,28 @@
 from __future__ import annotations
 
-from .types import Rut
+from ._syntax import group_thousands
+from .parse import parse
+from .types import Rut, Style, VerifierCase
 
 
-def format(rut: Rut, *, dots: bool = True, uppercase: bool = True) -> str:
-    """Format a validated RUT for display."""
+def format(
+    value: Rut | str,
+    *,
+    style: Style = "dotted",
+    verifier_case: VerifierCase = "upper",
+) -> str:
+    """Format a RUT for display.
 
-    body = rut[:-1]
-    verifier = rut[-1] if uppercase else rut[-1].lower()
+    Accepts a parsed ``Rut`` or any string ``parse`` accepts, which makes stored
+    values usable without a cast. Raises ``RutError`` for invalid input, so it
+    never returns a formatted string that is not a real RUT. Use ``safe_parse``
+    for untrusted input.
+    """
+    canonical = parse(value)
+    body = canonical[:-1]
+    verifier = canonical[-1].lower() if verifier_case == "lower" else canonical[-1]
 
-    if not dots:
+    if style == "plain":
         return f"{body}-{verifier}"
 
-    result = f"{body[-3:]}-{verifier}"
-    rest = body[:-3]
-
-    while len(rest) > 3:
-        result = f"{rest[-3:]}.{result}"
-        rest = rest[:-3]
-
-    if rest:
-        result = f"{rest}.{result}"
-
-    return result
+    return f"{group_thousands(body)}-{verifier}"

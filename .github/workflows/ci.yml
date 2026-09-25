@@ -7,7 +7,12 @@ on:
 
 jobs:
   js:
+    name: js (node ${{ matrix.node }})
     runs-on: ubuntu-latest
+    strategy:
+      fail-fast: false
+      matrix:
+        node: [20, 22, 24]
     steps:
       - uses: actions/checkout@v4
 
@@ -15,7 +20,7 @@ jobs:
 
       - uses: actions/setup-node@v4
         with:
-          node-version: 22
+          node-version: ${{ matrix.node }}
           cache: pnpm
 
       - run: pnpm install --frozen-lockfile
@@ -25,10 +30,31 @@ jobs:
       - run: pnpm lint:package
 
   python:
+    name: python (${{ matrix.python }})
     runs-on: ubuntu-latest
     defaults:
       run:
         working-directory: packages/python
+    strategy:
+      fail-fast: false
+      matrix:
+        python: ["3.10", "3.11", "3.12", "3.13"]
+    steps:
+      - uses: actions/checkout@v4
+
+      - uses: astral-sh/setup-uv@v6
+        with:
+          python-version: ${{ matrix.python }}
+
+      - run: uv sync --extra dev
+      - run: uv run ruff check .
+      - run: uv run ruff format --check .
+      - run: uv run mypy
+      - run: uv run pytest
+
+  parity:
+    name: cross-language parity
+    runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
 
@@ -36,6 +62,15 @@ jobs:
         with:
           python-version: "3.13"
 
-      - run: uv sync --extra dev
-      - run: uv run pytest
-      - run: uv run mypy
+      # Both packages are released in lockstep.
+      - run: python scripts/check_versions.py
+
+      - run: uv sync --extra dev --project packages/python
+      - run: uv run --project packages/python ruff check scripts
+      - run: uv run --project packages/python ruff format --check scripts
+
+      # The conformance fixture is generated from the Python implementation and
+      # asserted by both test suites. A stale fixture means the suites are no
+      # longer comparing the two packages against the same expectations.
+      - run: uv run --project packages/python python scripts/generate_conformance.py
+      - run: git diff --exit-code fixtures/conformance.json

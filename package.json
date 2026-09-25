@@ -6,7 +6,9 @@
     "build": "pnpm --filter @dud-cl/rut build",
     "test": "pnpm --filter @dud-cl/rut test",
     "typecheck": "pnpm --filter @dud-cl/rut typecheck",
-    "lint:package": "pnpm --filter @dud-cl/rut lint:package"
+    "lint:package": "pnpm --filter @dud-cl/rut lint:package",
+    "check:versions": "python3 scripts/check_versions.py",
+    "fixtures:conformance": "uv run --project packages/python python scripts/generate_conformance.py"
   },
   "engines": {
     "node": ">=20"

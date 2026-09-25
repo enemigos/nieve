@@ -1,54 +1,56 @@
-import type { FormatOptions, Rut } from './types'
+import { parse } from './parse'
+import { groupThousands } from './syntax'
+import type { FormatOptions, PartialFormat, Rut } from './types'
+
+/** Accepts the characters `formatPartial` can normalize into a RUT prefix. */
+const PARTIAL_SHAPE = /^(?:\d{0,9}|\d{0,8}K)$/
 
 /**
- * Format partial RUT input while it is being edited.
- * Leaves unsupported or overlong input unchanged so validation can reject it.
- * Warning: normalization can make otherwise invalid raw syntax parseable.
- * Never trust the output without validation.
+ * Format editable input for display while it is being typed.
+ *
+ * Returns `kind: 'formatted'` with the normalized value, or `kind:
+ * 'unsupported'` with the input unchanged when it cannot become a RUT by typing
+ * more characters. Nothing is validated: a `formatted` value can still be
+ * rejected by `parse`, and normalizing separators can turn raw syntax that
+ * `parse` rejects into syntax it accepts. Validate before storing the value.
  */
-export function formatPartial(input: unknown): string {
-  if (typeof input !== 'string') return ''
-
-  if (/[^0-9kK.\s-]/.test(input)) return input
+export function formatPartial(input: unknown): PartialFormat {
+  if (typeof input !== 'string') return { kind: 'unsupported', value: '' }
 
   const normalized = input.replace(/[.\s-]+/g, '').toUpperCase()
 
-  if (!/^(?:\d{0,9}|\d{0,8}K)$/.test(normalized)) return input
+  if (!PARTIAL_SHAPE.test(normalized)) {
+    return { kind: 'unsupported', value: input }
+  }
 
-  if (normalized.length < 2) return normalized
+  if (normalized.length < 2) return { kind: 'formatted', value: normalized }
 
   const body = normalized.slice(0, -1)
   const verifier = normalized.slice(-1)
-  const dottedBody = body.replace(/\B(?=(\d{3})+(?!\d))/g, '.')
 
-  return `${dottedBody}-${verifier}`
+  return { kind: 'formatted', value: `${groupThousands(body)}-${verifier}` }
 }
 
 /**
- * Format a validated RUT for display.
+ * Format a RUT for display.
+ *
+ * Accepts a parsed `Rut` or any string `parse` accepts, which makes stored
+ * values usable without an unsafe cast. Throws `RutError` for invalid input, so
+ * it never returns a formatted string that is not a real RUT. Use `safeParse`
+ * for untrusted input.
  */
-export function format(rut: Rut, options: FormatOptions = {}): string {
-  const dots = options.dots ?? true
-  const body = rut.slice(0, -1)
-  const verifier = options.uppercase === false
-    ? rut.slice(-1).toLowerCase()
-    : rut.slice(-1)
+export function format(
+  value: Rut | string,
+  options: FormatOptions = {},
+): string {
+  const canonical = parse(value)
+  const body = canonical.slice(0, -1)
+  const verifier =
+    options.verifierCase === 'lower'
+      ? canonical.slice(-1).toLowerCase()
+      : canonical.slice(-1)
 
-  if (!dots) {
-    return `${body}-${verifier}`
-  }
+  if (options.style === 'plain') return `${body}-${verifier}`
 
-  let result = `${body.slice(-3)}-${verifier}`
-  let rest = body.slice(0, -3)
-
-  while (rest.length > 3) {
-    result = `${rest.slice(-3)}.${result}`
-    rest = rest.slice(0, -3)
-  }
-
-  if (rest.length > 0) {
-    result = `${rest}.${result}`
-  }
-
-  return result
+  return `${groupThousands(body)}-${verifier}`
 }

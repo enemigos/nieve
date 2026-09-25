@@ -4,5 +4,12 @@
   { "input": "12.345.678-k", "output": "12345678K" },
   { "input": "12*345*678*k", "output": "12345678K" },
   { "input": "0018.972.631-7", "output": "189726317" },
-  { "input": "00000189726317", "output": "189726317" }
+  { "input": "00000189726317", "output": "189726317" },
+  { "input": "  18.972.631-7  ", "output": "189726317" },
+
+  { "input": "", "output": "" },
+  { "input": "0", "output": "" },
+  { "input": "abc", "output": "" },
+  { "input": "chuma1996@gmail.com", "output": "1996" },
+  { "input": "kilo 21.272.789-k", "output": "K21272789K" }
 ]

@@ -1,14 +1,13 @@
 import { RutError } from './error'
+import {
+  MAX_BODY_LENGTH,
+  MIN_BODY_LENGTH,
+  RUT_SYNTAX,
+  stripSeparators,
+  trimWhitespace,
+} from './syntax'
 import type { Language, Rut, RutIssue, SafeParseResult } from './types'
 import { calculateVerifier } from './verifier'
-
-/** Same shape gate as rut.js `validate`. */
-const RUT_FORMAT =
-  /^([1-9]\d{0,2}(\.?\d{3})*)-?[\dkK]$/
-
-/** Body 7-8 digits + DV. Rejects short modulo-11 false positives. */
-const MIN_CLEANED_LENGTH = 8
-const MAX_CLEANED_LENGTH = 9
 
 type Messages = {
   readonly type: string
@@ -38,10 +37,17 @@ const MESSAGES = {
   },
 } satisfies Record<Language, Messages>
 
-function asRut(value: string): Rut {
-  return value as Rut
+function failure(issue: RutIssue): SafeParseResult {
+  return { success: false, issue }
 }
 
+/**
+ * Validate input without throwing.
+ *
+ * Surrounding whitespace is ignored. Everything else must already be a RUT:
+ * dots are all present or all absent, the hyphen is optional, and `k` may be
+ * written in either case. `issue.input` always reports the original input.
+ */
 export function safeParse(
   input: unknown,
   language: Language = 'es',
@@ -49,59 +55,44 @@ export function safeParse(
   const messages = MESSAGES[language]
 
   if (typeof input !== 'string') {
-    const issue = {
-      kind: 'type',
-      message: messages.type,
-      input,
-    } as const satisfies RutIssue
-
-    return { success: false, issue }
+    return failure({ kind: 'type', message: messages.type, input })
   }
 
-  if (!RUT_FORMAT.test(input)) {
-    const issue = {
-      kind: 'format',
-      message: messages.format,
-      input,
-    } as const satisfies RutIssue
+  const value = trimWhitespace(input)
 
-    return { success: false, issue }
+  if (!RUT_SYNTAX.test(value)) {
+    return failure({ kind: 'format', message: messages.format, input })
   }
 
-  const cleaned = input.replace(/[.-]/g, '').toUpperCase()
-
-  if (
-    cleaned.length < MIN_CLEANED_LENGTH ||
-    cleaned.length > MAX_CLEANED_LENGTH
-  ) {
-    const issue = {
-      kind: 'length',
-      message: messages.length(cleaned.length - 1),
-      input,
-    } as const satisfies RutIssue
-
-    return { success: false, issue }
-  }
-
+  const cleaned = stripSeparators(value).toUpperCase()
   const body = cleaned.slice(0, -1)
   const received = cleaned.slice(-1)
+
+  if (body.length < MIN_BODY_LENGTH || body.length > MAX_BODY_LENGTH) {
+    return failure({
+      kind: 'length',
+      message: messages.length(body.length),
+      input,
+      bodyLength: body.length,
+    })
+  }
+
   const expected = calculateVerifier(body)
 
   if (expected !== received) {
-    const issue = {
+    return failure({
       kind: 'verifier',
       message: messages.verifier(expected, received),
       input,
       expected,
       received,
-    } as const satisfies RutIssue
-
-    return { success: false, issue }
+    })
   }
 
-  return { success: true, output: asRut(cleaned) }
+  return { success: true, output: cleaned as Rut }
 }
 
+/** Validate input. Return the canonical RUT or throw `RutError`. */
 export function parse(input: unknown, language: Language = 'es'): Rut {
   const result = safeParse(input, language)
 
@@ -112,11 +103,16 @@ export function parse(input: unknown, language: Language = 'es'): Rut {
   return result.output
 }
 
+/** Return whether input is a valid RUT. */
 export function is(input: unknown): boolean {
   return safeParse(input).success
 }
 
-/** Return whether two valid RUT inputs have the same canonical value. */
+/**
+ * Return whether two inputs are the same RUT.
+ * Returns `false` when either input is invalid, so it cannot distinguish
+ * "different" from "invalid". Validate with `safeParse` when that matters.
+ */
 export function compare(left: unknown, right: unknown): boolean {
   const leftResult = safeParse(left)
   const rightResult = safeParse(right)

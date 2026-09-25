@@ -1,0 +1,10 @@
+[
+  { "left": "21.272.789-K", "right": "21272789K", "equal": true },
+  { "left": "21.272.789-K", "right": "21272789k", "equal": true },
+  { "left": " 21.272.789-K ", "right": "21.272.789K", "equal": true },
+  { "left": "21.272.789-K", "right": "9.068.826-k", "equal": false },
+  { "left": "21.272.789-0", "right": "21.272.789-0", "equal": false },
+  { "left": "21.272.789-K", "right": "21.272789-K", "equal": false },
+  { "left": null, "right": null, "equal": false },
+  { "left": "189726317", "right": 189726317, "equal": false }
+]

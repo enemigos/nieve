@@ -1,8 +1,14 @@
 from __future__ import annotations
 
-import re
 from typing import TypedDict
 
+from ._syntax import (
+    MAX_BODY_LENGTH,
+    MIN_BODY_LENGTH,
+    RUT_SYNTAX,
+    strip_separators,
+    trim_whitespace,
+)
 from ._verifier import _calculate_verifier
 from .error import RutError
 from .types import (
@@ -16,13 +22,6 @@ from .types import (
     TypeIssue,
     VerifierIssue,
 )
-
-# Same shape gate as rut.js `validate`.
-_RUT_FORMAT = re.compile(r"^([1-9][0-9]{0,2}(\.?[0-9]{3})*)-?[0-9kK]$")
-
-# Body 7-8 digits + DV. Rejects short modulo-11 false positives.
-_MIN_CLEANED_LENGTH = 8
-_MAX_CLEANED_LENGTH = 9
 
 
 class _Messages(TypedDict):
@@ -52,8 +51,7 @@ _MESSAGES: dict[Language, _Messages] = {
     },
     "en": {
         "type": (
-            'RUT must be a string. Use a value such as "21.272.789-K", '
-            "then try again."
+            'RUT must be a string. Use a value such as "21.272.789-K", then try again.'
         ),
         "format": (
             "RUT format is incorrect. Use 7 or 8 digits and a verifier, "
@@ -70,55 +68,44 @@ _MESSAGES: dict[Language, _Messages] = {
 }
 
 
-def clean(input: object) -> str:
-    """Normalize a RUT-like string without validating it."""
-    if not isinstance(input, str):
-        return ""
-
-    cleaned = re.sub(r"[^0-9kK]+", "", input).lstrip("0")
-    return cleaned.upper()
-
-
 def safe_parse(input: object, language: Language = "es") -> SafeParseResult:
+    """Validate input without raising.
+
+    Surrounding whitespace is ignored. Everything else must already be a RUT:
+    dots are all present or all absent, the hyphen is optional, and ``k`` may be
+    written in either case. ``issue.input`` always reports the original input.
+    """
     messages = _MESSAGES[language]
 
     if not isinstance(input, str):
         return SafeParseFailure(
             success=False,
-            issue=TypeIssue(
-                kind="type",
-                message=messages["type"],
-                input=input,
-            ),
+            issue=TypeIssue(kind="type", message=messages["type"], input=input),
         )
 
-    if _RUT_FORMAT.fullmatch(input) is None:
+    value = trim_whitespace(input)
+
+    if RUT_SYNTAX.fullmatch(value) is None:
         return SafeParseFailure(
             success=False,
-            issue=FormatIssue(
-                kind="format",
-                message=messages["format"],
-                input=input,
-            ),
+            issue=FormatIssue(kind="format", message=messages["format"], input=input),
         )
 
-    cleaned = input.replace(".", "").replace("-", "").upper()
+    cleaned = strip_separators(value).upper()
+    body = cleaned[:-1]
+    received = cleaned[-1]
 
-    if (
-        len(cleaned) < _MIN_CLEANED_LENGTH
-        or len(cleaned) > _MAX_CLEANED_LENGTH
-    ):
+    if not MIN_BODY_LENGTH <= len(body) <= MAX_BODY_LENGTH:
         return SafeParseFailure(
             success=False,
             issue=LengthIssue(
                 kind="length",
-                message=messages["length"].format(body_length=len(cleaned) - 1),
+                message=messages["length"].format(body_length=len(body)),
                 input=input,
+                body_length=len(body),
             ),
         )
 
-    body = cleaned[:-1]
-    received = cleaned[-1]
     expected = _calculate_verifier(body)
 
     if expected != received:
@@ -140,6 +127,7 @@ def safe_parse(input: object, language: Language = "es") -> SafeParseResult:
 
 
 def parse(input: object, language: Language = "es") -> Rut:
+    """Validate input. Return the canonical RUT or raise ``RutError``."""
     result = safe_parse(input, language)
     if not result.success:
         raise RutError(result.issue)
@@ -149,13 +137,18 @@ def parse(input: object, language: Language = "es") -> Rut:
 def is_rut(input: object) -> bool:
     """Return whether input is a valid RUT.
 
-    Named ``is_rut`` because ``is`` is a Python keyword (TS export is ``is``).
+    Named ``is_rut`` because ``is`` is a Python keyword (the TypeScript export
+    is ``is``).
     """
     return safe_parse(input).success
 
 
 def compare(left: object, right: object) -> bool:
-    """Return whether two valid RUT inputs have the same canonical value."""
+    """Return whether two inputs are the same RUT.
+
+    Returns ``False`` when either input is invalid, so it cannot distinguish
+    "different" from "invalid". Validate with ``safe_parse`` when that matters.
+    """
     left_result = safe_parse(left)
     right_result = safe_parse(right)
     return (

@@ -4,15 +4,17 @@
 
 This project provides matching core parsing, validation, formatting, comparison, and verifier APIs for TypeScript and Python. Use `@dud-cl/rut` in TypeScript or JavaScript. Use `dud-cl-rut` in Python. TypeScript additionally provides `formatPartial` for progressive browser input; it is intentionally not part of the Python package.
 
+Both packages are released with the same version number, and CI fails when the two versions differ. `fixtures/conformance.json` holds 435 cases generated from the Python implementation; both test suites assert against it, so a behavior difference between the two packages fails CI.
+
 The project exists because the legacy RUT packages still receive substantial use but no longer publish regular fixes. `rut.js` is the most-downloaded legacy package in this comparison. Its latest npm release is `2.1.0`, published on October 27, 2021. Its repository received two runtime fixes in April 2024 and dependency updates in November 2024, but those changes did not produce a new npm release. The repository still has open validation and formatting issues. The `rutjs` package is version `0.1.1`, published on July 21, 2013. Its `jeam/rut` repository has had no commits since July 2013 and still has an open validation issue.
 
 This project defines stricter behavior for cases reported in those packages:
 
-- It rejects the email example from [rut.js issue #15](https://github.com/jlobos/rut.js/issues/15), both directly and after `clean`, because the result fails strict format or body-length validation.
+- It rejects the email example from [rut.js issue #15](https://github.com/jlobos/rut.js/issues/15), both directly and after `clean`, because the result fails strict syntax or body-length validation.
 - It rejects short progressive input such as `17353`. A RUT body must contain 7 or 8 digits. This behavior differs from the behavior reported in [rut.js issue #25](https://github.com/jlobos/rut.js/issues/25).
 - Its test suite includes 7-digit and 8-digit bodies. [rut.js issue #27](https://github.com/jlobos/rut.js/issues/27) reports an 8-digit formatting problem.
 - It rejects bodies with more than 8 digits. This behavior differs from the behavior reported in [rutjs issue #1](https://github.com/jeam/rut/issues/1).
-- It rejects malformed separators, prefixed text, Arabic-Indic digits, leading-zero bodies, and all-zero bodies.
+- It rejects inconsistent thousands separators, prefixed and suffixed text, Arabic-Indic digits, leading-zero bodies, and all-zero bodies.
 - It returns structured validation issues instead of a bare boolean.
 - It provides actionable Spanish and English messages.
 - It ships typed ESM for TypeScript and a typed, dependency-free Python package.
@@ -30,6 +32,7 @@ The parser accepts these equivalent forms:
 
 ```text
 21.272.789-K
+21.272.789K
 21272789-K
 21272789K
 21.272.789-k
@@ -38,15 +41,33 @@ The parser accepts these equivalent forms:
 The parser applies these rules:
 
 - Input must be a string.
+- Whitespace around the value is ignored. ASCII whitespace and the no-break space are trimmed. Whitespace inside the value is rejected.
 - The body must contain 7 or 8 ASCII digits.
 - The body cannot start with zero.
-- Dots must use valid thousands grouping when present.
+- Dots are either all present, in groups of three digits after a leading group of one to three digits, or entirely absent. Mixed forms such as `21.272789-K` and `21272.789-K` are rejected.
 - The hyphen before the verifier is optional.
 - The verifier must match the modulo-11 result.
 - `K` is case-insensitive on input.
 - Successful parsing returns the canonical value `21272789K`.
 
-Use `clean` only for normalization. It removes unrelated characters and does not validate the result. Use `parse`, `safeParse`, or `is` when accepting user input.
+The 7-digit floor is deliberate. It rejects modulo-11 false positives in short input, and it also rejects very low real RUT values and test values such as `1-9`. Those report the `length` issue kind with the actual body size, so an application that wants to accept them can detect the case.
+
+`clean` is a lossy normalizer, not a validator. It strips every character that is not a digit or `K`, so it turns unrelated text into a RUT-looking string. Use `parse`, `safeParse`, or `is` when accepting input.
+
+**Issue kinds**
+
+`safeParse` and `safe_parse` return exactly one issue. Each kind means one thing:
+
+| kind | Condition | Extra fields |
+|---|---|---|
+| `type` | Input is not a string. | none |
+| `format` | Syntax is not a RUT: stray characters, mixed or misplaced separators, a leading zero, an empty value. | none |
+| `length` | Syntax is valid but the body does not contain 7 or 8 digits. | `bodyLength` in TypeScript, `body_length` in Python |
+| `verifier` | Size is valid but the verifier does not match the modulo-11 result. | `expected`, `received` |
+
+`issue.input` always reports the original input, before whitespace is trimmed.
+
+Spanish (`es`) is the default language. Pass `en` as the second argument to `parse`, `safeParse`, or `safe_parse` for English messages.
 
 **TypeScript API**
 
@@ -54,18 +75,22 @@ Use `clean` only for normalization. It removes unrelated characters and does not
 import * as rut from '@dud-cl/rut'
 
 type Language = 'es' | 'en'
+type RutStyle = 'dotted' | 'plain'
+type VerifierCase = 'upper' | 'lower'
 
 rut.parse(input: unknown, language?: Language): rut.Rut
 rut.safeParse(input: unknown, language?: Language): rut.SafeParseResult
 rut.is(input: unknown): boolean
-rut.format(value: rut.Rut, options?: { dots?: boolean; uppercase?: boolean }): string
-rut.formatPartial(input: unknown): string
+rut.format(value: rut.Rut | string, options?: { style?: RutStyle; verifierCase?: VerifierCase }): string
+rut.formatPartial(input: unknown): rut.PartialFormat
 rut.clean(input: unknown): string
 rut.compare(left: unknown, right: unknown): boolean
 rut.getVerifier(body: unknown): string | null
 ```
 
-`parse` validates and returns a branded canonical `Rut`. It throws `RutError` when validation fails.
+Exported types: `Rut`, `Language`, `RutIssue`, `RutIssueKind`, `TypeIssue`, `FormatIssue`, `LengthIssue`, `VerifierIssue`, `SafeParseResult`, `SafeParseSuccess`, `SafeParseFailure`, `FormatOptions`, `RutStyle`, `VerifierCase`, `PartialFormat`.
+
+`parse` validates and returns a branded canonical `Rut`. It throws `RutError` when validation fails. `RutError.issue` carries the issue.
 
 `safeParse` returns a discriminated result. It does not throw for invalid RUT input.
 
@@ -84,25 +109,37 @@ const result = rut.safeParse('21.272.789-0', 'en')
 // }
 ```
 
-Issue kinds are `type`, `format`, `length`, and `verifier`. Spanish (`es`) is the default language. Pass `en` as the second argument to `parse` or `safeParse` for English messages.
-
-`format` accepts a parsed `Rut`. Dots and uppercase `K` are enabled by default. `formatPartial` formats one partial RUT token while it is being edited. It normalizes dots, hyphens, whitespace, and a final lowercase `k`. Input containing other characters, more than nine meaningful characters, or a non-final `K` is returned unchanged, so the function does not extract or truncate a RUT from surrounding text.
-
-**Warning:** `formatPartial` output is untrusted. Normalizing separators and whitespace can make raw syntax rejected by strict parsing become parseable. If exact raw syntax matters, call `safeParse(raw)` and display its validated output with `format`. If normalization is acceptable, call `safeParse(formatPartial(raw))` before accepting or storing the value. `formatPartial` never validates body length or the verifier.
+`format` validates its argument before formatting and throws `RutError` for anything that is not a RUT, so it never returns a formatted string that is not a real RUT. It accepts a branded `Rut` or any string `parse` accepts, which makes a canonical value read back from storage usable without a cast.
 
 ```ts
 const value = rut.parse('21.272.789-K')
 
-rut.format(value)                              // '21.272.789-K'
-rut.format(value, { dots: false })             // '21272789-K'
-rut.format(value, { uppercase: false })        // '21.272.789-k'
-rut.formatPartial('17353')                     // '1.735-3'
-rut.formatPartial(' 18-972-631-7 ')            // '18.972.631-7'
-rut.formatPartial('prefix21.272.789-K')         // unchanged
-rut.clean('0021.272.789-k')                    // '21272789K'
-rut.compare('21.272.789-K', '21272789K')       // true
-rut.getVerifier('21.272.789')                  // 'K'
+rut.format(value)                                 // '21.272.789-K'
+rut.format(value, { style: 'plain' })             // '21272789-K'
+rut.format(value, { verifierCase: 'lower' })      // '21.272.789-k'
+rut.format('21272789K')                           // '21.272.789-K'
+rut.format('21.272789-K')                         // throws RutError
+
+rut.clean('0021.272.789-k')                       // '21272789K'
+rut.compare('21.272.789-K', '21272789K')          // true
+rut.getVerifier('21.272.789')                     // 'K'
+rut.getVerifier('3,966,753')                      // null, commas are not separators
 ```
+
+`compare` returns `false` when either input is invalid, so it cannot distinguish "different" from "invalid". Use `safeParse` when that difference matters.
+
+`formatPartial` formats one partial RUT token while it is being edited and returns a discriminated result:
+
+```ts
+rut.formatPartial('17353')             // { kind: 'formatted', value: '1.735-3' }
+rut.formatPartial(' 18-972-631-7 ')    // { kind: 'formatted', value: '18.972.631-7' }
+rut.formatPartial('prefix21272789K')   // { kind: 'unsupported', value: 'prefix21272789K' }
+rut.formatPartial(189726317)           // { kind: 'unsupported', value: '' }
+```
+
+`unsupported` means the input cannot become a RUT by typing more characters, and `value` is the input unchanged, so the function never extracts or truncates a RUT from surrounding text.
+
+**Warning:** `formatPartial` validates nothing. Normalizing separators and whitespace can turn raw syntax that `parse` rejects into syntax it accepts. If exact raw syntax matters, call `safeParse(raw)` and display its validated output with `format`. If normalization is acceptable, validate the formatted value before accepting or storing it. `formatPartial` never checks body length or the verifier.
 
 **Python API**
 
@@ -112,25 +149,29 @@ from dud_cl import rut
 rut.parse(input: object, language: rut.Language = "es") -> rut.Rut
 rut.safe_parse(input: object, language: rut.Language = "es") -> rut.SafeParseResult
 rut.is_rut(input: object) -> bool
-rut.format(value: rut.Rut, *, dots: bool = True, uppercase: bool = True) -> str
+rut.format(value: rut.Rut | str, *, style: rut.Style = "dotted", verifier_case: rut.VerifierCase = "upper") -> str
 rut.clean(input: object) -> str
 rut.compare(left: object, right: object) -> bool
 rut.get_verifier(body: object) -> str | None
 ```
 
-`RutError` extends `ValueError`. Pydantic and other Python validators can handle it directly. Python uses `is_rut` because `is` is a reserved keyword.
+Exported names: `Rut`, `Language`, `RutError`, `RutIssue`, `RutIssueKind`, `TypeIssue`, `FormatIssue`, `LengthIssue`, `VerifierIssue`, `SafeParseResult`, `SafeParseSuccess`, `SafeParseFailure`, `Style`, `VerifierCase`.
+
+`RutError` extends `ValueError`. Pydantic and other Python validators can handle it directly. Python uses `is_rut` because `is` is a reserved keyword. The issue dataclasses are importable, so code can narrow with `isinstance` instead of comparing strings.
 
 ```python
 from dud_cl import rut
 
 value = rut.parse("21.272.789-K")
 
-rut.format(value)                    # "21.272.789-K"
-rut.format(value, dots=False)        # "21272789-K"
-rut.format(value, uppercase=False)   # "21.272.789-k"
-rut.clean("0021.272.789-k")          # "21272789K"
-rut.compare("21.272.789-K", "21272789K")
-rut.get_verifier("21.272.789")       # "K"
+rut.format(value)                          # "21.272.789-K"
+rut.format(value, style="plain")           # "21272789-K"
+rut.format(value, verifier_case="lower")   # "21.272.789-k"
+rut.format("21272789K")                    # "21.272.789-K"
+
+rut.clean("0021.272.789-k")                # "21272789K"
+rut.compare("21.272.789-K", "21272789K")   # True
+rut.get_verifier("21.272.789")             # "K"
 ```
 
 `safe_parse` returns the Python equivalent of the TypeScript discriminated result. It does not raise an exception for invalid RUT input.
@@ -251,9 +292,9 @@ assert user.national_id == "21272789K"
 
 **Recipe: React form**
 
-Format and validate while the user types. Keep the complete discriminated result in state, show the exact issue next to the field, and pass the canonical `Rut` to application code.
+Format and validate while the user types. Keep the complete discriminated result in state, show the exact issue next to the field, and pass the canonical `Rut` to application code. Ignoring `unsupported` input rejects the keystroke instead of leaving unusable text in the field.
 
-This recipe intentionally accepts separator and whitespace normalization. Validate the raw input before formatting instead when the original syntax must pass strict parsing.
+This recipe accepts separator and whitespace normalization. Validate the raw input instead when the original syntax must pass strict parsing.
 
 ```tsx
 import { useState, type FormEvent } from 'react'
@@ -275,9 +316,12 @@ export function RutForm({ onValid }: RutFormProps) {
   const issue = validation?.success === false ? validation.issue : null
 
   function edit(raw: string) {
-    const next = formatPartial(raw)
-    setInput(next)
-    setValidation(next ? safeParse(next, 'en') : null)
+    const partial = formatPartial(raw)
+
+    if (partial.kind === 'unsupported') return
+
+    setInput(partial.value)
+    setValidation(partial.value ? safeParse(partial.value, 'en') : null)
   }
 
   function submit(event: FormEvent<HTMLFormElement>) {
@@ -421,10 +465,12 @@ Validate on submit. Keep the canonical RUT separate from the formatted field val
 ## Documentation
 
 - [Project README](https://raw.githubusercontent.com/panquequelol/rut-cl/main/README.md): Installation, API summary, and TypeScript and Python examples.
+- [Changelog](https://raw.githubusercontent.com/panquequelol/rut-cl/main/CHANGELOG.md): Shared changelog for both packages, including breaking changes.
 - [TypeScript README](https://raw.githubusercontent.com/panquequelol/rut-cl/main/packages/js/README.md): TypeScript package usage and API.
 - [Python README](https://raw.githubusercontent.com/panquequelol/rut-cl/main/packages/python/README.md): Python package usage and API.
 - [TypeScript source](https://github.com/panquequelol/rut-cl/tree/main/packages/js/src): Validation, formatting, issue types, and tests.
 - [Python source](https://github.com/panquequelol/rut-cl/tree/main/packages/python/src/dud_cl/rut): Python implementation and type definitions.
+- [Shared fixtures](https://github.com/panquequelol/rut-cl/tree/main/fixtures): Cases both test suites assert against, including the generated conformance suite.
 
 ## Packages
 

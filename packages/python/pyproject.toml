@@ -4,7 +4,7 @@ build-backend = "hatchling.build"
 
 [project]
 name = "dud-cl-rut"
-version = "0.2.0"
+version = "0.4.0"
 description = "Lean Chilean RUT validation and formatting for Python"
 readme = "README.md"
 license = "MIT"
@@ -30,7 +30,7 @@ Repository = "https://github.com/panquequelol/rut-cl"
 Issues = "https://github.com/panquequelol/rut-cl/issues"
 
 [project.optional-dependencies]
-dev = ["pytest>=8.0", "mypy>=1.14"]
+dev = ["pytest>=8.0", "mypy>=1.14", "ruff>=0.9"]
 
 [tool.hatch.build.targets.sdist]
 include = ["src/dud_cl/rut", "README.md", "LICENSE"]
@@ -41,8 +41,24 @@ packages = ["src/dud_cl"]
 [tool.pytest.ini_options]
 testpaths = ["tests"]
 
+[tool.ruff]
+line-length = 88
+target-version = "py310"
+src = ["src", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "I", "UP", "B", "A", "RUF"]
+# `input` and `format` shadow builtins on purpose: the public API mirrors the
+# TypeScript package, where `format` and the `input` issue field are the names
+# users already know.
+ignore = ["A001", "A002", "A004"]
+
+[tool.ruff.format]
+# Documentation code blocks use aligned trailing comments on purpose.
+exclude = ["*.md"]
+
 [tool.mypy]
 python_version = "3.10"
 strict = true
 mypy_path = "src"
-packages = ["dud_cl.rut"]
+packages = ["dud_cl.rut", "tests"]

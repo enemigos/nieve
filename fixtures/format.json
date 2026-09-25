@@ -1,0 +1,71 @@
+{
+  "cases": [
+    {
+      "value": "21272789K",
+      "style": "dotted",
+      "verifierCase": "upper",
+      "output": "21.272.789-K"
+    },
+    {
+      "value": "21272789K",
+      "style": "plain",
+      "verifierCase": "upper",
+      "output": "21272789-K"
+    },
+    {
+      "value": "21272789K",
+      "style": "dotted",
+      "verifierCase": "lower",
+      "output": "21.272.789-k"
+    },
+    {
+      "value": "21272789K",
+      "style": "plain",
+      "verifierCase": "lower",
+      "output": "21272789-k"
+    },
+    {
+      "value": "189726317",
+      "style": "dotted",
+      "verifierCase": "lower",
+      "output": "18.972.631-7"
+    },
+    {
+      "value": "9068826K",
+      "style": "dotted",
+      "verifierCase": "upper",
+      "output": "9.068.826-K"
+    },
+    {
+      "value": "9068826K",
+      "style": "plain",
+      "verifierCase": "lower",
+      "output": "9068826-k"
+    },
+    {
+      "value": "10000009",
+      "style": "dotted",
+      "verifierCase": "upper",
+      "output": "1.000.000-9"
+    },
+    {
+      "value": "100000008",
+      "style": "dotted",
+      "verifierCase": "upper",
+      "output": "10.000.000-8"
+    },
+    {
+      "value": "18.972.631-7",
+      "style": "dotted",
+      "verifierCase": "upper",
+      "output": "18.972.631-7"
+    },
+    {
+      "value": "  9068826k  ",
+      "style": "plain",
+      "verifierCase": "upper",
+      "output": "9068826-K"
+    }
+  ],
+  "rejected": ["", " ", "17", "1-9", "21.272.789-0", "21.272789-K", "nope"]
+}

@@ -1,6 +1,6 @@
 {
   "name": "@dud-cl/rut",
-  "version": "0.3.0",
+  "version": "0.4.0",
   "description": "Lean Chilean RUT validation and formatting for TypeScript",
   "license": "MIT",
   "type": "module",

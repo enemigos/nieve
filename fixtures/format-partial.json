@@ -1,0 +1,21 @@
+[
+  { "input": "", "kind": "formatted", "value": "" },
+  { "input": "1", "kind": "formatted", "value": "1" },
+  { "input": "k", "kind": "formatted", "value": "K" },
+  { "input": "17", "kind": "formatted", "value": "1-7" },
+  { "input": "173", "kind": "formatted", "value": "17-3" },
+  { "input": "1735", "kind": "formatted", "value": "173-5" },
+  { "input": "17353", "kind": "formatted", "value": "1.735-3" },
+  { "input": "189726317", "kind": "formatted", "value": "18.972.631-7" },
+  { "input": "21.272.789-k", "kind": "formatted", "value": "21.272.789-K" },
+  { "input": " 18-972-631-7 ", "kind": "formatted", "value": "18.972.631-7" },
+  { "input": "21 272 789 k", "kind": "formatted", "value": "21.272.789-K" },
+
+  { "input": "prefix21.272.789-K", "kind": "unsupported", "value": "prefix21.272.789-K" },
+  { "input": "21.272.789-K extra", "kind": "unsupported", "value": "21.272.789-K extra" },
+  { "input": "18,972,631-7", "kind": "unsupported", "value": "18,972,631-7" },
+  { "input": "1234567890", "kind": "unsupported", "value": "1234567890" },
+  { "input": "189726317999", "kind": "unsupported", "value": "189726317999" },
+  { "input": "2127K2789", "kind": "unsupported", "value": "2127K2789" },
+  { "input": "abc", "kind": "unsupported", "value": "abc" }
+]
